@@ -55,18 +55,14 @@ export const workProjects = [
     tech: ["VB.NET", "MS SQL Server", "Stored Procedures", "Views", "Crystal Reports"],
     link: null
   },
+
+
+
   {
     title: "CAPSTONE: E-BLOTTER SYSTEM",
     subtext: "Capstone Project",
     description: "Digital transformation project for local government replacing manual logging with a secure resident record system.",
     tech: ["VB.NET", "MySQL Workbench", "XAMPP", "Crystal Reports"],
-    link: null
-  },
-  {
-    title: "IROSINHUB",
-    subtext: "Enterprise Platform",
-    description: "Local community and enterprise portal solution.",
-    tech: ["Full-stack ecosystem"],
     link: null
   }
 ];
