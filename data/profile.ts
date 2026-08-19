@@ -2,9 +2,10 @@ export const profile = {
   name: "Wilbert",
   role: "Software Engineer",
   affiliations: [
-    { title: "Member", organization: "AAP" },
-    { title: "Member", organization: "PSIA" },
-    { title: "Founder", organization: "🇵🇭 AppBuildersPH" }
+    { title: "Member", organization: "Programming Philippines", link: "https://www.facebook.com/groups/programmingpilipinas/" },
+    { title: "Member", organization: "IT Philippines", link: "https://www.facebook.com/groups/itphil/" },
+    { title: "Member", organization: "App Builders PH 🇵🇭", link: "https://www.facebook.com/groups/980298767865372/" },
+    { title: "Member", organization: "Javascript Developers", link: "https://www.facebook.com/groups/306772026647688/" }
   ],
   recommendations: [
     {
@@ -21,7 +22,7 @@ export const profile = {
     period: "in the last year"
   },
   socials: {
-    github: "https://github.com/wilbert03",
+    github: "https://github.com/WilWilbert123",
     twitter: "https://twitter.com/",
     instagram: "https://instagram.com/",
     facebook: "https://facebook.com/",
