@@ -23,7 +23,7 @@ export default function PersonalProjects() {
     <>
       <section className="py-24 relative" id="projects" ref={containerRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-6">
             <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl">
@@ -37,8 +37,8 @@ export default function PersonalProjects() {
           {/* Hover Reveal List */}
           <div className="flex flex-col border-t-[2px] border-foreground/20">
             {personalProjects.map((project, idx) => (
-              <button 
-                key={idx} 
+              <button
+                key={idx}
                 onClick={() => setSelectedProject(project)}
                 className="group w-full text-left flex flex-col md:flex-row justify-between items-start md:items-center border-b-[2px] border-foreground/20 py-10 transition-colors hover:border-foreground"
               >
@@ -68,14 +68,14 @@ export default function PersonalProjects() {
       {/* Pixelated Modal */}
       <AnimatePresence>
         {selectedProject && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedProject(null)}
             className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 overflow-y-auto"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -84,7 +84,7 @@ export default function PersonalProjects() {
             >
               {/* Modal Inner Container */}
               <div className="border-[2px] border-foreground p-6 md:p-8 bg-background relative flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
-                
+
                 {/* Header */}
                 <div className="flex justify-between items-start mb-8">
                   <div>
@@ -95,7 +95,7 @@ export default function PersonalProjects() {
                       </p>
                     )}
                   </div>
-                  <button 
+                  <button
                     onClick={() => setSelectedProject(null)}
                     className="absolute top-6 right-6 p-2 hover:bg-foreground hover:text-background transition-colors pixel-border"
                   >
@@ -105,14 +105,14 @@ export default function PersonalProjects() {
 
                 {/* Clickable Image */}
                 {selectedProject.image && (
-                  <a 
+                  <a
                     href={selectedProject.link !== "#" ? selectedProject.link : undefined}
                     target={selectedProject.link !== "#" ? "_blank" : undefined}
                     rel="noopener noreferrer"
-                    className="block relative w-full aspect-video mb-8 group cursor-pointer"
+                    className="block relative w-full aspect-[4/3] mb-8 group cursor-pointer"
                   >
                     <div className="absolute inset-0 bg-foreground/10 group-hover:bg-transparent transition-colors z-10 pointer-events-none" />
-                    
+
                     {/* Hover Overlay */}
                     {selectedProject.link !== "#" && (
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-background/40 backdrop-blur-sm">
@@ -123,10 +123,10 @@ export default function PersonalProjects() {
                     )}
 
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={selectedProject.image} 
+                    <img
+                      src={selectedProject.image}
                       alt={selectedProject.title}
-                      className="w-full h-full object-cover pixel-border grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500"
+                      className="w-full h-full object-contain bg-background/50 pixel-border grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500"
                     />
                   </a>
                 )}
@@ -137,8 +137,8 @@ export default function PersonalProjects() {
                     <h4 className="font-['Silkscreen'] text-lg mb-4 opacity-80 uppercase tracking-widest">Tech Stack</h4>
                     <div className="flex flex-wrap gap-3 md:gap-4">
                       {selectedProject.tech.map((tech, i) => (
-                        <span 
-                          key={i} 
+                        <span
+                          key={i}
                           className="font-mono text-xs md:text-sm px-4 py-2 border-[2px] border-foreground/30 hover:border-foreground hover:bg-foreground hover:text-background transition-colors select-none"
                         >
                           {tech}
@@ -147,7 +147,7 @@ export default function PersonalProjects() {
                     </div>
                   </div>
                 )}
-                
+
               </div>
             </motion.div>
           </motion.div>

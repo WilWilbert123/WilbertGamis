@@ -80,28 +80,31 @@ export default function Certifications() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-background border-[4px] border-foreground p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_rgba(255,255,255,0.2)]"
+              className="relative w-full max-w-5xl pixel-border bg-background p-1 mt-10 md:mt-0 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
-              <div className="flex justify-between items-center mb-8 border-b-[4px] border-foreground pb-4">
-                <h3 className="font-['Press_Start_2P'] text-lg sm:text-xl md:text-2xl">
-                  CREDENTIALS
-                </h3>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 border-[4px] border-foreground hover:bg-foreground hover:text-background transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
+              {/* Modal Inner Container */}
+              <div className="border-[2px] border-foreground p-6 md:p-8 bg-background relative flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
+                
+                {/* Modal Header */}
+                <div className="flex justify-between items-center mb-8 border-b-[2px] border-foreground pb-4">
+                  <h3 className="font-['Press_Start_2P'] text-lg sm:text-xl md:text-2xl">
+                    CREDENTIALS
+                  </h3>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-2 pixel-border hover:bg-foreground hover:text-background transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
 
               {/* Grid of Certificates */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item, index) => (
                   <div key={index} className="flex flex-col gap-2">
                     <div 
-                      className={`relative aspect-[4/3] border-[4px] border-foreground overflow-hidden ${item.link ? 'cursor-pointer hover:scale-[1.02] transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' : 'cursor-not-allowed opacity-80'}`}
+                      className={`relative aspect-[4/3] pixel-border overflow-hidden ${item.link ? 'cursor-pointer hover:scale-[1.02] transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' : 'cursor-not-allowed opacity-80'}`}
                       onClick={() => {
                         if (item.link) {
                           window.open(item.link, '_blank');
@@ -111,7 +114,7 @@ export default function Certifications() {
                       <img 
                         src={item.image} 
                         alt={item.text}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-2"
                       />
                     </div>
                     <div className="flex justify-between items-center mt-2">
@@ -128,6 +131,7 @@ export default function Certifications() {
                     </div>
                   </div>
                 ))}
+              </div>
               </div>
             </motion.div>
           </motion.div>
