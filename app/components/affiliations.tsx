@@ -25,7 +25,7 @@ export default function Affiliations() {
     <>
       <section className="py-24 relative" id="affiliations">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-6">
             <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl leading-snug">
@@ -37,7 +37,7 @@ export default function Affiliations() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
-            
+
             {/* Affiliations */}
             <div className="lg:col-span-5">
               <div className="flex items-center gap-3 mb-8 border-b-2 border-foreground pb-4">
@@ -48,7 +48,14 @@ export default function Affiliations() {
               </div>
               <ul className="space-y-8">
                 {profile.affiliations.map((aff, idx) => (
-                  <li key={idx} className="flex items-start gap-4 group">
+                  <motion.li
+                    key={idx}
+                    initial={{ opacity: 0, x: -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="flex items-start gap-4 group"
+                  >
                     <span className="font-['Press_Start_2P'] text-foreground/40 text-xs mt-1.5 group-hover:text-foreground transition-colors">{">"}</span>
                     <div className="flex flex-col">
                       {aff.link ? (
@@ -62,7 +69,7 @@ export default function Affiliations() {
                       )}
                       <span className="font-mono text-sm opacity-70 mt-1">{aff.title}</span>
                     </div>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </div>
@@ -73,7 +80,7 @@ export default function Affiliations() {
                 <h3 className="font-['Silkscreen'] text-lg sm:text-xl">
                   Recommendations
                 </h3>
-                <button 
+                <button
                   onClick={() => setIsModalOpen(true)}
                   className="font-['Silkscreen'] text-sm hover:text-primary transition-colors flex items-center gap-2 group"
                 >
@@ -82,7 +89,15 @@ export default function Affiliations() {
               </div>
               <div className="space-y-8">
                 {previewRecommendations.map((rec, idx) => (
-                  <div key={idx} className="pixel-border pixel-border-hover p-6 sm:p-8 bg-background relative transition-all hover:-translate-y-1">
+                  <motion.div 
+                    key={idx} 
+                    initial={{ opacity: 0, x: 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    whileHover={{ y: -4 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="pixel-border pixel-border-hover p-6 sm:p-8 bg-background relative"
+                  >
                     <div className="absolute -top-5 -left-2 bg-foreground text-background p-1.5 border-2 border-foreground">
                       <Quote size={24} fill="currentColor" />
                     </div>
@@ -95,7 +110,7 @@ export default function Affiliations() {
                         {rec.author}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -123,14 +138,14 @@ export default function Affiliations() {
               className="relative w-full max-w-5xl pixel-border bg-foreground p-1 my-10 shadow-2xl"
             >
               <div className="bg-background h-full p-6 md:p-8 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar relative border-2 border-foreground">
-                
+
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8 border-b-2 border-foreground/20 pb-4">
                   <div className="flex items-center gap-3">
                     <Quote size={24} className="text-primary" />
                     <h3 className="font-['Press_Start_2P'] text-sm md:text-base">all_recommendations.log</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsModalOpen(false)}
                     className="p-2 hover:bg-foreground hover:text-background transition-colors pixel-border"
                   >
@@ -144,10 +159,10 @@ export default function Affiliations() {
                     // Create bento layout logic that cycles organically through all 15 items
                     const isWide = idx % 5 === 0 || idx % 8 === 3;
                     const isTall = idx % 6 === 1;
-                    
+
                     return (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className={`pixel-border bg-background p-6 flex flex-col justify-between group transition-all duration-300 hover:bg-foreground hover:text-background ${isWide ? 'md:col-span-2' : ''} ${isTall ? 'md:row-span-2' : ''}`}
                       >
                         <div className="mb-6">
@@ -166,7 +181,7 @@ export default function Affiliations() {
                     );
                   })}
                 </div>
-                
+
               </div>
             </motion.div>
           </motion.div>

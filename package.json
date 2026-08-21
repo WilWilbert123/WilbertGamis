@@ -19,6 +19,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-github-calendar": "^5.0.8",
+    "react-icons": "^5.7.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

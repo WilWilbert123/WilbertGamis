@@ -37,8 +37,12 @@ export default function PersonalProjects() {
           {/* Hover Reveal List */}
           <div className="flex flex-col border-t-[2px] border-foreground/20">
             {personalProjects.map((project, idx) => (
-              <button
+              <motion.button
                 key={idx}
+                initial={{ opacity: 0, x: idx % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
                 onClick={() => setSelectedProject(project)}
                 className="group w-full text-left flex flex-col md:flex-row justify-between items-start md:items-center border-b-[2px] border-foreground/20 py-10 transition-colors hover:border-foreground"
               >
@@ -57,7 +61,7 @@ export default function PersonalProjects() {
                   <span>VIEW DETAILS</span>
                   <ArrowRight size={24} className="transform group-hover:-rotate-45 transition-transform shrink-0" />
                 </div>
-              </button>
+              </motion.button>
             ))}
           </div>
 

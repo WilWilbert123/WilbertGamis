@@ -39,8 +39,12 @@ export default function TechStack() {
           {/* Categories (Clean List Layout) */}
           <div className="flex flex-col">
             {skills.map((skillGroup, idx) => (
-              <div 
+              <motion.div 
                 key={idx} 
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
                 className="group flex flex-col md:flex-row gap-4 md:gap-12 border-b-[2px] border-foreground/20 py-8 first:border-t-[2px] hover:border-foreground transition-colors"
               >
                 {/* Category Name */}
@@ -67,7 +71,7 @@ export default function TechStack() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
