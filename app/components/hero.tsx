@@ -87,6 +87,7 @@ export default function Hero() {
                     src="/Wilbertpixel.png"
                     alt="Wilbert"
                     fill
+                    sizes="100vw"
                     className="object-cover object-bottom grayscale hover:grayscale-0 transition-all duration-500"
                     onError={(e) => {
                       // Fallback if image not found

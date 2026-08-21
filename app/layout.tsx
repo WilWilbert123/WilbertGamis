@@ -20,6 +20,8 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 });
 
+import ChatWidget from "./components/chat-widget";
+
 export const metadata: Metadata = {
   title: "Wilbert | Software Engineer",
   description: "High-performance portfolio of Wilbert, Software Engineer.",
@@ -42,6 +44,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>
