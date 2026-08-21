@@ -9,7 +9,7 @@ export const skills = [
   },
   {
     category: "Backend & Databases",
-    items: ["Node.js", "Express", "Python", "Nginx", "MongoDB Atlas", "MS SQL", "MySQL", "PostgreSQL", "Stored Procedures", "Database Views", "Schema Design", "Supabase", "Cloudinary", "Resend SMTP", "REST APIs", "NoSQL", "Cron Jobs"]
+    items: ["Node.js", "Express", "Python", "Nginx", "MongoDB Atlas", "MS SQL", "MySQL", "PostgreSQL", "Stored Procedures", "Database Views", "Schema Design", "Supabase", "AWS", "Cloudinary", "Resend SMTP", "REST APIs", "NoSQL", "Cron Jobs"]
   },
   {
     category: "Desktop & Enterprise",
