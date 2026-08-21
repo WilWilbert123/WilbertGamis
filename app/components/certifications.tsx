@@ -32,7 +32,7 @@ export default function Certifications() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="flex flex-col items-center justify-center mb-2 gap-4 text-center">
+        <div className="flex flex-col items-center justify-center mb-6 gap-4 text-center">
           <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl leading-snug">
             certifications
           </h2>
@@ -43,26 +43,25 @@ export default function Certifications() {
             credentials <ArrowRight size={16} />
           </button>
         </div>
+      </div>
 
-        {/* Circular Gallery */}
-        <div style={{ height: '600px', position: 'relative' }} className="bg-background cursor-pointer">
-          <CircularGallery
-            items={items}
-            bend={1.5}
-            textColor={textColor}
-            borderRadius={0}
-            fontUrl="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-            font="16px 'Press Start 2P'"
-            scrollSpeed={2}
-            onActiveItemChange={setActiveIndex}
-            onItemClick={(index) => {
-              if (items[index].link) {
-                window.open(items[index].link, '_blank');
-              }
-            }}
-          />
-        </div>
-
+      {/* Circular Gallery - Full Width */}
+      <div style={{ height: '600px', position: 'relative' }} className="w-full bg-background cursor-pointer">
+        <CircularGallery
+          items={items}
+          bend={1.5}
+          textColor={textColor}
+          borderRadius={0}
+          fontUrl="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+          font="16px 'Press Start 2P'"
+          scrollSpeed={2}
+          onActiveItemChange={setActiveIndex}
+          onItemClick={(index) => {
+            if (items[index].link) {
+              window.open(items[index].link, '_blank');
+            }
+          }}
+        />
       </div>
 
       {/* Retro Credentials Modal */}

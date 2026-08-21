@@ -389,11 +389,17 @@ class Media {
                 this.plane.program.uniforms.uViewportSizes.value = [this.viewport.width, this.viewport.height];
             }
         }
-        this.scale = this.screen.height / 1500;
-        this.plane.scale.y = (this.viewport.height * (700 * this.scale)) / this.screen.height;
-        this.plane.scale.x = (this.viewport.width * (900 * this.scale)) / this.screen.width;
+        // Scale based on viewport width to show exactly 3 images at once
+        // On very small screens, show exactly 1 image
+        const imagesToShow = this.screen.width < 768 ? 1.3 : 3.5;
+        
+        this.plane.scale.x = this.viewport.width / imagesToShow;
+        this.plane.scale.y = this.plane.scale.x * 0.75; // 4:3 aspect ratio for certificates
+        
         this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
-        this.padding = 2;
+        
+        // Padding between images
+        this.padding = this.plane.scale.x * 0.15; 
         this.width = this.plane.scale.x + this.padding;
         this.widthTotal = this.width * this.length;
         this.x = this.width * this.index;
