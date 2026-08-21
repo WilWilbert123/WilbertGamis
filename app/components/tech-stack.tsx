@@ -44,7 +44,7 @@ export default function TechStack() {
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: idx * 0.15 }}
                 className="group flex flex-col md:flex-row gap-4 md:gap-12 border-b-[2px] border-foreground/20 py-8 first:border-t-[2px] hover:border-foreground transition-colors"
               >
                 {/* Category Name */}
@@ -112,25 +112,42 @@ export default function TechStack() {
                 </div>
 
                 {/* Content */}
-                <div className="space-y-10">
+                <motion.div 
+                  className="space-y-10"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    visible: { transition: { staggerChildren: 0.25 } }
+                  }}
+                >
                   {skills.map((group, idx) => (
-                    <div key={idx}>
+                    <motion.div 
+                      key={idx}
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1, duration: 0.6 } }
+                      }}
+                    >
                       <h4 className="font-['Silkscreen'] text-foreground/50 mb-4 uppercase tracking-widest text-lg">
                         {'>'} {group.category}
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {group.items.map((item, i) => (
-                          <div 
+                          <motion.div 
                             key={i} 
-                            className="font-mono text-xs md:text-sm p-3 border border-foreground/10 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center"
+                            variants={{
+                              hidden: { opacity: 0, scale: 0.95 },
+                              visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
+                            }}
+                            className="font-mono text-xs md:text-sm p-3 pixel-border hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center"
                           >
                             {item}
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
                 
               </div>
             </motion.div>

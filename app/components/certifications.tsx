@@ -22,7 +22,7 @@ export default function Certifications() {
   const { theme, resolvedTheme } = useTheme();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   // Choose text color based on theme
   const currentTheme = theme === 'dark' || resolvedTheme === 'dark' ? 'dark' : 'light';
   const textColor = currentTheme === 'dark' ? '#ffffff' : '#000000';
@@ -30,13 +30,13 @@ export default function Certifications() {
   return (
     <section className="py-24" id="certifications">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="flex flex-col items-center justify-center mb-6 gap-4 text-center">
           <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl leading-snug">
             certifications
           </h2>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 justify-center cursor-pointer"
           >
@@ -46,7 +46,14 @@ export default function Certifications() {
       </div>
 
       {/* Circular Gallery - Full Width */}
-      <div style={{ height: '600px', position: 'relative' }} className="w-full bg-background cursor-pointer">
+      <motion.div 
+        style={{ height: '600px', position: 'relative' }} 
+        className="w-full bg-background cursor-pointer"
+        initial={{ opacity: 0, y: 100 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1.0] }}
+      >
         <CircularGallery
           items={items}
           bend={1.5}
@@ -62,7 +69,7 @@ export default function Certifications() {
             }
           }}
         />
-      </div>
+      </motion.div>
 
       {/* Retro Credentials Modal */}
       <AnimatePresence>
@@ -84,7 +91,7 @@ export default function Certifications() {
             >
               {/* Modal Inner Container */}
               <div className="border-[2px] border-foreground p-6 md:p-8 bg-background relative flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
-                
+
                 {/* Modal Header */}
                 <div className="flex justify-between items-center mb-8 border-b-[2px] border-foreground pb-4">
                   <h3 className="font-['Press_Start_2P'] text-lg sm:text-xl md:text-2xl">
@@ -98,39 +105,45 @@ export default function Certifications() {
                   </button>
                 </div>
 
-              {/* Grid of Certificates */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.map((item, index) => (
-                  <div key={index} className="flex flex-col gap-2">
-                    <div 
-                      className={`relative aspect-[4/3] pixel-border overflow-hidden ${item.link ? 'cursor-pointer hover:scale-[1.02] transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' : 'cursor-not-allowed opacity-80'}`}
-                      onClick={() => {
-                        if (item.link) {
-                          window.open(item.link, '_blank');
-                        }
-                      }}
+                {/* Grid of Certificates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {items.map((item, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex flex-col gap-2"
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
                     >
-                      <img 
-                        src={item.image} 
-                        alt={item.text}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    </div>
-                    <div className="flex justify-between items-start mt-2 gap-2">
-                      <span className="font-['Silkscreen'] text-[10px] sm:text-xs break-words leading-snug flex-1">{item.modalText || item.text}</span>
-                      {item.link ? (
-                        <span className="text-[10px] bg-foreground text-background px-2 py-1 font-['Press_Start_2P'] rounded-sm shrink-0">
-                          VERIFIED
-                        </span>
-                      ) : (
-                        <span className="text-[10px] border-[2px] border-foreground px-2 py-1 font-['Press_Start_2P'] rounded-sm opacity-50 shrink-0">
-                          ISSUED
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      <div
+                        className={`relative aspect-[4/3] pixel-border overflow-hidden ${item.link ? 'cursor-pointer hover:scale-[1.02] transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' : 'cursor-not-allowed opacity-80'}`}
+                        onClick={() => {
+                          if (item.link) {
+                            window.open(item.link, '_blank');
+                          }
+                        }}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.text}
+                          className="w-full h-full object-contain p-2"
+                        />
+                      </div>
+                      <div className="flex justify-between items-start mt-2 gap-2">
+                        <span className="font-['Silkscreen'] text-[10px] sm:text-xs break-words leading-snug flex-1">{item.modalText || item.text}</span>
+                        {item.link ? (
+                          <span className="text-[10px] bg-foreground text-background px-2 py-1 font-['Press_Start_2P'] rounded-sm shrink-0">
+                            VERIFIED
+                          </span>
+                        ) : (
+                          <span className="text-[10px] border-[2px] border-foreground px-2 py-1 font-['Press_Start_2P'] rounded-sm opacity-50 shrink-0">
+                            ISSUED
+                          </span>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           </motion.div>
