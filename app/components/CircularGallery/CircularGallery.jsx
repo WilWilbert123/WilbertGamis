@@ -392,14 +392,14 @@ class Media {
         // Scale based on viewport width to show exactly 3 images at once
         // On very small screens, show exactly 1 image
         const imagesToShow = this.screen.width < 768 ? 1.3 : 3.5;
-        
+
         this.plane.scale.x = this.viewport.width / imagesToShow;
         this.plane.scale.y = this.plane.scale.x * 0.75; // 4:3 aspect ratio for certificates
-        
+
         this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
-        
+
         // Padding between images
-        this.padding = this.plane.scale.x * 0.15; 
+        this.padding = this.plane.scale.x * 0.15;
         this.width = this.plane.scale.x + this.padding;
         this.widthTotal = this.width * this.length;
         this.x = this.width * this.index;
@@ -521,23 +521,23 @@ class App {
             const rect = this.container.getBoundingClientRect();
             const x = this.start - rect.left;
             const y = this.startY - rect.top;
-            
+
             const centerX = this.screen.width / 2;
             const centerY = this.screen.height / 2;
-            
+
             let clickedIndex = -1;
             let minDistance = Infinity;
-            
+
             this.medias.forEach((media, i) => {
                 const mediaScreenX = centerX + (media.plane.position.x / this.viewport.width) * this.screen.width;
                 const mediaScreenY = centerY - (media.plane.position.y / this.viewport.height) * this.screen.height;
-                
+
                 const pixelW = (media.plane.scale.x / this.viewport.width) * this.screen.width;
                 const pixelH = (media.plane.scale.y / this.viewport.height) * this.screen.height;
-                
+
                 const hitW = pixelW / 2;
                 const hitH = pixelH / 2 + (150 * this.scale);
-                
+
                 if (Math.abs(x - mediaScreenX) <= hitW && Math.abs(y - mediaScreenY) <= hitH) {
                     const dist = Math.abs(x - mediaScreenX);
                     if (dist < minDistance) {
@@ -589,7 +589,7 @@ class App {
         const itemIndex = Math.round(Math.abs(this.scroll.target) / width);
         const item = width * itemIndex;
         this.scroll.target = this.scroll.target < 0 ? -item : item;
-        
+
         if (this.onActiveItemChange) {
             this.onActiveItemChange(itemIndex % this.originalLength);
         }

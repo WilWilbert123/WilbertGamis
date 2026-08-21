@@ -154,15 +154,26 @@ export default function Affiliations() {
                 </div>
 
                 {/* Bento Box Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid-flow-row-dense">
+                <motion.div 
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid-flow-row-dense"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    visible: { transition: { staggerChildren: 0.15 } }
+                  }}
+                >
                   {profile.recommendations.map((rec, idx) => {
                     // Create bento layout logic that cycles organically through all 15 items
                     const isWide = idx % 5 === 0 || idx % 8 === 3;
                     const isTall = idx % 6 === 1;
 
                     return (
-                      <div
+                      <motion.div
                         key={idx}
+                        variants={{
+                          hidden: { opacity: 0, y: 30 },
+                          visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+                        }}
                         className={`pixel-border bg-background p-6 flex flex-col justify-between group transition-all duration-300 hover:bg-foreground hover:text-background ${isWide ? 'md:col-span-2' : ''} ${isTall ? 'md:row-span-2' : ''}`}
                       >
                         <div className="mb-6">
@@ -177,10 +188,10 @@ export default function Affiliations() {
                             {rec.author}
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
 
               </div>
             </motion.div>

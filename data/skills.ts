@@ -5,7 +5,7 @@ export const skills = [
   },
   {
     category: "Web & AI Stack",
-    items: ["Next.js", "React.js", "TypeScript", "Gemini Vision AI API", "Vite", "Tailwind CSS", "HTML/CSS"]
+    items: ["Next.js", "React.js", "TypeScript", "Gemini Vision AI API", "OpenAI API", "Deepseek API", "Vite", "Tailwind CSS", "HTML/CSS"]
   },
   {
     category: "Backend & Databases",
