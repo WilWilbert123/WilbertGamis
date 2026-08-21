@@ -103,10 +103,10 @@ export const profile = {
   },
   socials: {
     github: "https://github.com/WilWilbert123",
-    twitter: "https://twitter.com/",
-    instagram: "https://instagram.com/",
+    twitter: "https://x.com/herroz7vsp?s=11",
+    instagram: "https://www.instagram.com/jw.gamis?igsi=MXJ3Y3VoNDJpbTNweA%3D%3D&utm_source=qr",
     facebook: "https://facebook.com/",
-    linkedin: "https://linkedin.com/in/",
-    email: "mailto:contact@example.com"
+    linkedin: "https://www.linkedin.com/in/john-wilbert-gamis-7b0a39247",
+    email: "mailto:johnwilbertgamis2022@gmail.com"
   }
 };
