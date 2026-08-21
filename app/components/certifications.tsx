@@ -8,13 +8,13 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const items = [
   { image: '/asset/certificate/AWS.png', text: 'AWS', link: 'https://skillbuilder.aws/learn/4URFGY63KV/official-practice-question-set-aws-certified-ai-practitioner--aifc01--english/FVG43Y1PAX' },
-  { image: '/asset/certificate/Cybersecurity with cisco.png', text: 'Cisco', link: 'https://www.coursera.org/account/accomplishments/specialization/certificate/T0WFQT95HWPK' },
+  { image: '/asset/certificate/Cybersecurity with cisco.png', text: 'Cisco', modalText: 'Cybersecurity Fundamental with CISCO Tools', link: 'https://www.coursera.org/account/accomplishments/specialization/certificate/T0WFQT95HWPK' },
   { image: '/asset/certificate/GoogleAI.png', text: 'Google AI', link: 'https://www.coursera.org/account/accomplishments/specialization/QKDOSG7NHJYH' },
-  { image: '/asset/certificate/IBM-YLOXSG22AFYC.jpeg', text: 'IBM', link: 'https://www.coursera.org/account/accomplishments/professional-cert/YLOXSG22AFYC' },
-  { image: '/asset/certificate/Installing and Configuring.png', text: 'Configuring' },
-  { image: '/asset/certificate/Introduction to Computer Systems Servicing NC II.png', text: 'Servicing' },
-  { image: '/asset/certificate/Microsoft Cybersecurity.png', text: 'Microsoft' },
-  { image: '/asset/certificate/SMART Android Mobile Apps  .png', text: 'Android' },
+  { image: '/asset/certificate/IBM-YLOXSG22AFYC.jpeg', text: 'IBM', modalText: 'IBM Full-Stack JavaScript Developer', link: 'https://www.coursera.org/account/accomplishments/professional-cert/YLOXSG22AFYC' },
+  { image: '/asset/certificate/Installing and Configuring.png', text: 'Configuring', modalText: 'Installing and Configuring Computer Systems' },
+  { image: '/asset/certificate/Introduction to Computer Systems Servicing NC II.png', text: 'Servicing', modalText: 'Introduction to Computer Systems Servicing NC II' },
+  { image: '/asset/certificate/Microsoft Cybersecurity.png', text: 'Microsoft', modalText: 'Microsoft Cybersecurity Course: Security Compliance, and Identity Fundamentals' },
+  { image: '/asset/certificate/SMART Android Mobile Apps  .png', text: 'Android', modalText: 'SMART Android Mobile Apps development for Beginners' },
   { image: '/asset/certificate/SnowflakeDiscoverAi.png', text: 'Snowflake', link: 'https://info.snowflake.com/rs/252-RFO-227/images/00QVI00000lCUfE2AW-SNOWFLAKE_DISCOVER_AI-06-10072026.pdf?mkt_tok=MjUyLVJGTy0yMjcAAAGi_YpQtNsuXLZ6q_rpC35VnEbTTNETVUOFsRe6UynxTxt1ipQTW1sdyCHrGlWFxr8OgpE9Ysa9LtWaKWd50OOExs_qKGBKY3dpob64h4US9svPlznyKsc' },
 ];
 
@@ -117,14 +117,14 @@ export default function Certifications() {
                         className="w-full h-full object-contain p-2"
                       />
                     </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="font-['Silkscreen'] text-sm break-words">{item.text}</span>
+                    <div className="flex justify-between items-start mt-2 gap-2">
+                      <span className="font-['Silkscreen'] text-[10px] sm:text-xs break-words leading-snug flex-1">{item.modalText || item.text}</span>
                       {item.link ? (
-                        <span className="text-[10px] bg-foreground text-background px-2 py-1 font-['Press_Start_2P'] rounded-sm">
+                        <span className="text-[10px] bg-foreground text-background px-2 py-1 font-['Press_Start_2P'] rounded-sm shrink-0">
                           VERIFIED
                         </span>
                       ) : (
-                        <span className="text-[10px] border-[2px] border-foreground px-2 py-1 font-['Press_Start_2P'] rounded-sm opacity-50">
+                        <span className="text-[10px] border-[2px] border-foreground px-2 py-1 font-['Press_Start_2P'] rounded-sm opacity-50 shrink-0">
                           ISSUED
                         </span>
                       )}
