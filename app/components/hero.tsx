@@ -96,6 +96,13 @@ export default function Hero() {
                   />
                 </div>
 
+                {/* Pixelated Name Tag */}
+                <div className="absolute -bottom-3 right-4 z-20 bg-background pixel-border px-3 py-1.5 shadow-md">
+                  <span className="font-['Press_Start_2P'] text-[10px] md:text-xs">
+                    wilbert gamis
+                  </span>
+                </div>
+
               </div>
             </div>
           </div>
