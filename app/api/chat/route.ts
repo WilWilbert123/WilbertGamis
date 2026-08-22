@@ -11,7 +11,7 @@ const google = createGoogleGenerativeAI({
 export const maxDuration = 30;
 
 const KNOWLEDGE_BASE_TEXT = `
-You are PixelBot, an AI assistant representing Wilbert Gamis, a Junior Full Stack Programmer from the Philippines.
+You are Mr Robot, an AI assistant representing Wilbert Gamis, a Junior Full Stack Programmer from the Philippines.
 Your goal is to answer questions about Wilbert's skills, experience, projects, and background.
 
 CRITICAL RESPONSE GUIDELINES:
@@ -21,8 +21,9 @@ CRITICAL RESPONSE GUIDELINES:
 - Use clean headers, brief descriptions, and precise line breaks.
 - Organize information using clear markdown (bolding, headers).
 - Mirror a clean resume-like format in your answers.
-
-
+- IMPORTANT: If the user asks about their own IP address, location, device, or network, you MUST answer them using the data provided in the "CURRENT VISITOR INFO" section below. Do NOT claim you lack access to this information.
+- EASTER EGG RULE 1: If the user says exactly "no way" (case-insensitive), you MUST reply ONLY with: "Yeah no way haha"
+- EASTER EGG RULE 2: If the user says "Hi mr robot" or greets you directly by name, you MUST reply with: "oh hello next time dont click a random link btw how can i help you ?"
 Here is the knowledge base about Wilbert:
 Name: Wilbert Gamis (John Wilbert Gamis)
 Title: Junior Full Stack Programmer
@@ -31,7 +32,9 @@ Email: johnwilbertgamis2022@gmail.com
 Phone: +63 938 083 6756
 Website: https://wilbertgamis.dev
 GitHub: https://github.com/WilWilbert123
-LinkedIn: https://linkedin.com/in/johnwilbertgamis
+LinkedIn: https://www.linkedin.com/in/john-wilbert-gamis-7b0a39247
+Twitter: https://x.com/herroz7vsp?s=11
+Instagram: https://www.instagram.com/jw.gamis?igsi=MXJ3Y3VoNDJpbTNweA%3D%3D&utm_source=qr
 Bio: Junior Full Stack Programmer from the Philippines. BS IT grad from Veritas College of Irosin. Builds enterprise apps, mobile apps, and web solutions.
 Quote: "Code is poetry, and I write sonnets in JavaScript."
 Core Values: Innovation through simplicity, Quality over quantity, Continuous learning
@@ -86,7 +89,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid JSON payload.' }, { status: 400 });
     }
 
-    const { messages, reset } = body;
+    const { messages, reset, visitorData } = body;
+
+    let dynamicKnowledgeBase = KNOWLEDGE_BASE_TEXT;
+    if (visitorData) {
+      dynamicKnowledgeBase += `\n\n--- CURRENT VISITOR INFO (CRITICAL OVERRIDE) ---\nYou MUST use the following information if the user asks about their IP address, location, or device. Do NOT say you don't have access to this information. You DO have access to it, and here it is:\n`;
+      dynamicKnowledgeBase += JSON.stringify(visitorData, null, 2);
+    }
 
     if (reset) {
       return NextResponse.json({
@@ -108,18 +117,39 @@ export async function POST(req: Request) {
       content: m.text || m.content || '',
     }));
 
+    // Intercept Easter Eggs to bypass API quota
+    const lastMessageRaw = formattedMessages[formattedMessages.length - 1]?.content?.trim()?.toLowerCase() || '';
+    const lastMessageClean = lastMessageRaw.replace(/[^a-z0-9 ]/g, '').trim();
+
+    if (lastMessageClean === 'no way') {
+      return new Response("Yeah no way haha", { status: 200 });
+    }
+    
+    const greetings = ['hi', 'hello', 'hola', 'yow', 'whats up', 'what is up', 'hey', 'hi mr robot', 'hello mr robot'];
+    if (greetings.includes(lastMessageClean)) {
+      const userMessageCount = formattedMessages.filter(m => m.role === 'user').length;
+      if (userMessageCount === 1) {
+        return new Response("oh hello next time dont click a random link btw how can i help you ?", { status: 200 });
+      } else {
+        return new Response("hello ????", { status: 200 });
+      }
+    }
+
     // Use Vercel AI SDK to stream text using Gemini
     try {
       const { streamText } = await import('ai');
       const result = await streamText({
         model: google('gemini-3.5-flash'),
-        system: KNOWLEDGE_BASE_TEXT,
+        system: dynamicKnowledgeBase,
         messages: formattedMessages,
       });
 
       return result.toTextStreamResponse();
     } catch (apiError: any) {
       console.error("Gemini API Error during initialization:", apiError);
+      if (apiError?.message?.includes('quota') || apiError?.message?.includes('429') || apiError?.statusCode === 429) {
+        return new Response("Sorry, the AI API I use exceeded the limit. Please try again in a few minutes.", { status: 200 });
+      }
       return NextResponse.json({ error: apiError.message, name: apiError.name }, { status: 500 });
     }
 
@@ -138,7 +168,7 @@ export async function POST(req: Request) {
 export async function GET() {
   return NextResponse.json({
     status: 'online',
-    service: 'PixelBot AI powered by Gemini',
+    service: 'Mr Robot AI powered by Gemini',
     version: '6.0.0',
     creator: {
       name: "John Wilbert Gamis",

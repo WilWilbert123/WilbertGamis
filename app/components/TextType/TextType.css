@@ -1,0 +1,40 @@
+.text-type {
+    display: inline-block;
+    white-space: pre-wrap;
+}
+
+.text-type__cursor {
+    margin-left: 0.25rem;
+    display: inline-block;
+    opacity: 1;
+}
+
+.text-type__cursor--hidden {
+    display: none;
+}
+
+.text-type__content .prose h1 {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    margin-top: 0 !important;
+    margin-bottom: 8px !important;
+    line-height: 1.2 !important;
+}
+
+.text-type__content .prose h3 {
+    font-size: 11px !important;
+    font-weight: normal !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+}
+
+.text-type__content .prose h6 {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: #ef4444 !important;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 16px !important;
+    border-top: 1px solid rgba(239, 68, 68, 0.3);
+    padding-top: 8px;
+}

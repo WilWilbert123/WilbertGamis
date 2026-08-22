@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Menu, Plus, History, Trash2, ArrowLeft } from "lucide-react";
+import { Bot, X, Send, Menu, Plus, History, Trash2, ArrowLeft } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import { supabase } from "@/lib/supabase";
+import TextType from "./TextType/TextType";
 
 type ChatSession = {
   id: string;
@@ -13,7 +16,7 @@ type ChatSession = {
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  
+
   // Local storage state
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string>(() => {
@@ -21,8 +24,79 @@ export default function ChatWidget() {
   });
 
   const [messages, setMessages] = useState<any[]>([]);
+  const [visitorData, setVisitorData] = useState<any>(null);
   const [status, setStatus] = useState<"idle" | "submitted" | "streaming" | "error">("idle");
   const stopRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const trackVisitor = async () => {
+      const storedData = sessionStorage.getItem('visitor_data');
+      if (storedData) {
+        setVisitorData(JSON.parse(storedData));
+        return;
+      }
+
+      const userAgent = typeof window !== "undefined" ? window.navigator.userAgent : "";
+      let location = "Earth";
+      let ipv4 = "", ipv6 = "", isp = "", lat = 0, lng = 0;
+
+      const sessionId = Math.random().toString(36).substring(2, 15);
+
+      try {
+        const [res4, res6, ipRes] = await Promise.allSettled([
+          fetch("https://api.ipify.org?format=json").then(r => r.json()),
+          fetch("https://api6.ipify.org?format=json").then(r => r.json()),
+          fetch("https://ipinfo.io/json").then(r => r.json())
+        ]);
+
+        if (res4.status === 'fulfilled' && res4.value.ip) ipv4 = res4.value.ip;
+        if (res6.status === 'fulfilled' && res6.value.ip) ipv6 = res6.value.ip;
+
+        if (ipRes.status === 'fulfilled' && ipRes.value) {
+          const ipData = ipRes.value;
+          isp = ipData.org || "";
+
+          if (ipData.loc) {
+            const parts = ipData.loc.split(',');
+            lat = parseFloat(parts[0]) || 0;
+            lng = parseFloat(parts[1]) || 0;
+          }
+
+          const city = ipData.city || "";
+          const country = ipData.country || "";
+          if (city) location = country ? `${city}, ${country}` : city;
+        }
+      } catch (e) { }
+
+      const vData = {
+        session_id: sessionId,
+        device_info: userAgent,
+        latitude: lat,
+        longitude: lng,
+        isp,
+        ipv4,
+        ipv6,
+        location
+      };
+
+      setVisitorData(vData);
+
+      try {
+        const { error } = await supabase.from("portfolio_visitors").insert([vData]);
+        if (error) {
+          console.error("Supabase insert error:", error);
+        } else {
+          sessionStorage.setItem('visitor_data', JSON.stringify(vData));
+          sessionStorage.setItem('visitor_tracked', 'true');
+          console.log("Visitor tracked successfully!");
+        }
+      } catch (e) {
+        console.warn("Exception saving visitor to supabase", e);
+      }
+    };
+
+    trackVisitor();
+  }, []);
 
   const stop = () => {
     stopRef.current = true;
@@ -35,22 +109,22 @@ export default function ChatWidget() {
     setMessages(newMessages);
     setStatus("submitted");
     stopRef.current = false;
-    
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
-        body: JSON.stringify({ messages: newMessages })
+        body: JSON.stringify({ messages: newMessages, visitorData })
       });
-      
+
       if (!res.ok) throw new Error("API Error");
       setStatus("streaming");
-      
+
       const assistantId = (Date.now() + 1).toString();
       let assistantText = "";
-      
+
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
-      
+
       if (reader) {
         setMessages(prev => [...prev, { id: assistantId, role: "assistant", text: "" }]);
         while (!stopRef.current) {
@@ -106,10 +180,10 @@ export default function ChatWidget() {
     setChatHistory(prev => {
       const existingIdx = prev.findIndex(c => c.id === currentChatId);
       const firstMessage = messages[0]?.text || (messages[0]?.parts ? (messages[0]?.parts as any).map((p: any) => p.text).join('') : "New Chat");
-      const title = firstMessage 
-        ? firstMessage.substring(0, 30) + (firstMessage.length > 30 ? "..." : "") 
+      const title = firstMessage
+        ? firstMessage.substring(0, 30) + (firstMessage.length > 30 ? "..." : "")
         : "New Chat";
-      
+
       const newSession: ChatSession = {
         id: currentChatId,
         title,
@@ -124,7 +198,7 @@ export default function ChatWidget() {
       } else {
         newHistory = [newSession, ...prev];
       }
-      
+
       localStorage.setItem("pixelbot_chats", JSON.stringify(newHistory));
       return newHistory;
     });
@@ -150,7 +224,7 @@ export default function ChatWidget() {
 
   const deleteChat = (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); // prevent loading the chat
-    
+
     // Determine what to do with the current chat ID before updating history
     if (currentChatId === id) {
       const remainingHistory = chatHistory.filter(c => c.id !== id);
@@ -178,7 +252,7 @@ export default function ChatWidget() {
   }, [messages, isDrawerOpen]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-1 right-1 z-50">
       {isOpen ? (
         <div className="flex flex-col w-80 sm:w-96 h-[500px] bg-background pixel-border shadow-2xl relative overflow-hidden">
           {/* Header */}
@@ -187,7 +261,7 @@ export default function ChatWidget() {
               <button onClick={() => setIsDrawerOpen(!isDrawerOpen)} className="hover:opacity-70 transition-opacity">
                 {isDrawerOpen ? <ArrowLeft size={16} /> : <Menu size={16} />}
               </button>
-              <span className="font-['Press_Start_2P'] text-[10px]">PixelBot</span>
+              <span className="font-['Press_Start_2P'] text-[10px]">Mr Robot</span>
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:opacity-70 transition-opacity">
               <X size={16} />
@@ -197,7 +271,7 @@ export default function ChatWidget() {
           {/* Drawer Sidebar */}
           <div className={`absolute top-[42px] left-0 bottom-0 w-3/4 bg-background border-r-4 border-foreground/20 z-20 transition-transform duration-300 ease-in-out flex flex-col ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             <div className="p-3">
-              <button 
+              <button
                 onClick={startNewChat}
                 className="w-full flex items-center justify-center gap-2 bg-foreground text-background p-2 pixel-border hover:opacity-90 transition-opacity text-sm font-bold"
               >
@@ -212,13 +286,13 @@ export default function ChatWidget() {
                 <div className="text-xs text-muted-foreground px-2">No past chats</div>
               ) : (
                 chatHistory.map(chat => (
-                  <div 
+                  <div
                     key={chat.id}
                     onClick={() => loadChat(chat.id)}
                     className={`flex items-center justify-between p-2 cursor-pointer border-2 transition-colors ${currentChatId === chat.id ? 'border-foreground bg-muted' : 'border-transparent hover:bg-muted/50'}`}
                   >
                     <span className="text-sm truncate flex-1 font-mono">{chat.title}</span>
-                    <button 
+                    <button
                       onClick={(e) => deleteChat(chat.id, e)}
                       className="text-red-500 hover:text-red-700 p-1"
                     >
@@ -233,21 +307,38 @@ export default function ChatWidget() {
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-sm relative z-0">
             {messages.length === 0 ? (
-              <div className="text-center text-muted-foreground mt-10">
-                <p>Hello! I'm PixelBot.</p>
-                <p className="mt-2 text-xs">Ask me anything</p>
+              <div className="text-left text-muted-foreground mt-4 px-4 font-mono text-[10px] leading-relaxed opacity-80">
+                {visitorData ? (
+                  <TextType 
+                    text={`# Hello! I'm Mr Robot.\n\n### Ask me anything! By the way, before you ask, here is your data:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Use:** ${visitorData.device_info}\n**Internet Provider:** ${visitorData.isp}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit.`}
+                    typingSpeed={20}
+                    loop={false}
+                    showCursor={true}
+                    cursorCharacter="_"
+                    asMarkdown={true}
+                  />
+                ) : (
+                  <p className="animate-pulse">Acquiring target data...</p>
+                )}
               </div>
             ) : (
               messages.map((m) => (
                 <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div 
-                    className={`max-w-[80%] px-3 py-2 ${
-                      m.role === 'user' 
-                        ? 'bg-foreground text-background pixel-border' 
-                        : 'bg-muted text-foreground pixel-border'
-                    }`}
+                  <div
+                    className={`max-w-[80%] px-3 py-2 ${m.role === 'user'
+                      ? 'bg-foreground text-background pixel-border'
+                      : 'bg-muted text-foreground pixel-border overflow-hidden'
+                      }`}
                   >
-                    {m.text || (m as any).content || ((m as any).parts ? (m as any).parts.map((p: any, i: number) => p.type === 'text' ? <span key={i}>{p.text}</span> : null) : null)}
+                    {m.role === 'assistant' ? (
+                      <div className="[&>p]:mb-2 last:[&>p]:mb-0 [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mb-2 [&>h3]:font-bold [&>h3]:mb-1 [&>h3]:text-base [&>strong]:font-bold [&>a]:underline hover:[&>a]:text-blue-500 break-words max-w-full font-sans text-xs leading-relaxed">
+                        <ReactMarkdown>
+                          {m.text || (m as any).content || ''}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      m.text || (m as any).content || ((m as any).parts ? (m as any).parts.map((p: any, i: number) => p.type === 'text' ? <span key={i}>{p.text}</span> : null) : null)
+                    )}
                   </div>
                 </div>
               ))
@@ -270,8 +361,8 @@ export default function ChatWidget() {
                 placeholder="Type a message..."
                 onChange={handleInputChange}
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isLoading || !input?.trim()}
                 className="bg-foreground text-background p-2 pixel-border hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
               >
@@ -282,8 +373,8 @@ export default function ChatWidget() {
 
           {/* Overlay to close drawer when clicking outside */}
           {isDrawerOpen && (
-            <div 
-              className="absolute inset-0 top-[42px] bg-background/50 z-10 backdrop-blur-sm" 
+            <div
+              className="absolute inset-0 top-[42px] bg-background/50 z-10 backdrop-blur-sm"
               onClick={() => setIsDrawerOpen(false)}
             />
           )}
@@ -291,9 +382,10 @@ export default function ChatWidget() {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-foreground text-background p-4 pixel-border shadow-lg hover:scale-105 transition-transform flex items-center justify-center"
+          className="text-foreground hover:scale-110 transition-transform flex flex-col items-center justify-center p-2"
         >
-          <MessageSquare size={24} />
+          <Bot size={45} />
+          <span className="font-['Press_Start_2P'] text-[10px] mt-0.1 tracking-wider opacity-80">mr.robot</span>
         </button>
       )}
     </div>
