@@ -293,7 +293,7 @@ export default function ChatWidget() {
   }, [messages, isDrawerOpen]);
 
   return (
-    <div className="fixed bottom-1 right-1 z-50">
+    <div className="fixed bottom-4 right-1 z-50">
       {isOpen ? (
         <div className="flex flex-col w-80 sm:w-96 h-[500px] bg-background pixel-border shadow-2xl relative overflow-hidden">
           {/* Header */}
@@ -302,7 +302,9 @@ export default function ChatWidget() {
               <button onClick={() => setIsDrawerOpen(!isDrawerOpen)} className="hover:opacity-70 transition-opacity">
                 {isDrawerOpen ? <ArrowLeft size={16} /> : <Menu size={16} />}
               </button>
-              <span className="font-['Press_Start_2P'] text-[10px]">Mr Robot</span>
+              <span className="font-['Press_Start_2P'] text-[10px]">MR. ROBOT</span>
+              <img src="/mrrobot1png.png" alt="Mr. Robot" className="w-10 h-10 object-contain dark:invert scale-[2.5] -my-4 pointer-events-none" />
+
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:opacity-70 transition-opacity">
               <X size={16} />
@@ -374,7 +376,7 @@ export default function ChatWidget() {
                       loop
                       muted
                       playsInline
-                      className={`absolute top-10 -right-25 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 ${showMask ? 'opacity-40' : 'opacity-0'}`}
+                      className={`absolute top-13 -right-12 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 ${showMask ? 'opacity-40' : 'opacity-0'}`}
                     />
                   </div>
                 ) : (
@@ -444,8 +446,8 @@ export default function ChatWidget() {
           onClick={() => setIsOpen(true)}
           className="text-foreground hover:scale-110 transition-transform flex flex-col items-center justify-center p-2"
         >
-          <Bot size={45} />
-          <span className="font-['Press_Start_2P'] text-[10px] mt-0.1 tracking-wider opacity-80">mr.robot</span>
+          <img src="/mrrobot1png.png" alt="Mr. Robot" className="w-[200px] h-[200px] object-contain -mb-20 -mr-18 invert dark:invert-0" />
+
         </button>
       )}
     </div>
