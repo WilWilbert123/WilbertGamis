@@ -113,7 +113,7 @@ const TextType = ({
                         () => {
                             setDisplayedText(prev => prev + processedText[currentCharIndex]);
                             setCurrentCharIndex(prev => prev + 1);
-                            if (onType) onType();
+                            if (onType) onType(currentCharIndex + 1);
                         },
                         variableSpeed ? getRandomSpeed() : typingSpeed
                     );

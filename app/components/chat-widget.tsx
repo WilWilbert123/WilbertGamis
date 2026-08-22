@@ -28,6 +28,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<any[]>([]);
   const [visitorData, setVisitorData] = useState<any>(null);
   const [status, setStatus] = useState<"idle" | "submitted" | "streaming" | "error">("idle");
+  const [showMask, setShowMask] = useState(false);
   const stopRef = useRef<boolean>(false);
   const trackingRef = useRef<boolean>(false);
 
@@ -35,7 +36,7 @@ export default function ChatWidget() {
     const trackVisitor = async () => {
       if (trackingRef.current) return;
       trackingRef.current = true;
-      
+
       const storedData = sessionStorage.getItem('visitor_data');
       if (storedData) {
         setVisitorData(JSON.parse(storedData));
@@ -64,7 +65,7 @@ export default function ChatWidget() {
               gpu = (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
             }
           }
-        } catch (e) {}
+        } catch (e) { }
 
         // Extract Network Connection (4G/5G/Wifi)
         try {
@@ -72,7 +73,7 @@ export default function ChatWidget() {
           if (conn && conn.effectiveType) {
             connectionType = conn.effectiveType.toUpperCase();
           }
-        } catch (e) {}
+        } catch (e) { }
       }
 
       const sessionId = Math.random().toString(36).substring(2, 15);
@@ -345,23 +346,37 @@ export default function ChatWidget() {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-sm relative z-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 font-mono text-sm relative z-0">
             {messages.length === 0 ? (
-              <div className="text-left text-muted-foreground mt-4 px-4 font-mono text-[10px] leading-relaxed opacity-80">
+              <div className="text-left text-muted-foreground mt-4 px-4 font-mono text-[10px] leading-relaxed opacity-80 break-words w-full">
                 {visitorData ? (
-                  <TextType 
-                    text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... this is the data you expose every time you visit a website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**GPU / Chip:** ${visitorData.gpu}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit.`}
-                    typingSpeed={40}
-                    loop={false}
-                    showCursor={true}
-                    cursorCharacter="_"
-                    asMarkdown={true}
-                    onType={() => {
-                      if (messagesEndRef.current) {
-                        messagesEndRef.current.scrollIntoView({ behavior: "auto" });
-                      }
-                    }}
-                  />
+                  <div className="relative">
+                    <TextType
+                      text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... this is the data you expose every time you visit a website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**GPU / Chip:** ${visitorData.gpu}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit.`}
+                      typingSpeed={40}
+                      loop={false}
+                      showCursor={true}
+                      cursorCharacter="_"
+                      asMarkdown={true}
+                      onType={(index) => {
+                        if (messagesEndRef.current) {
+                          messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+                        }
+                        // 128 is exactly the number of characters in the intro text before the stats start
+                        if (index > 128 && !showMask) {
+                          setShowMask(true);
+                        }
+                      }}
+                    />
+                    <video
+                      src="/asset/mask/mask.MOV"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className={`absolute top-10 -right-25 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 ${showMask ? 'opacity-40' : 'opacity-0'}`}
+                    />
+                  </div>
                 ) : (
                   <p className="animate-pulse">Acquiring target data...</p>
                 )}

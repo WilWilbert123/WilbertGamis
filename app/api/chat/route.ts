@@ -24,60 +24,51 @@ CRITICAL RESPONSE GUIDELINES:
 - IMPORTANT: If the user asks about their own IP address, location, device, or network, you MUST answer them using the data provided in the "CURRENT VISITOR INFO" section below. Do NOT claim you lack access to this information.
 - EASTER EGG RULE 1: If the user says exactly "no way" (case-insensitive), you MUST reply ONLY with: "Yeah no way haha"
 - EASTER EGG RULE 2: If the user says "Hi mr robot" or greets you directly by name, you MUST reply with: "oh hello next time dont click a random link btw how can i help you ?"
+
 Here is the knowledge base about Wilbert:
-Name: Wilbert Gamis (John Wilbert Gamis)
+Name: John Wilbert Gamis
 Title: Junior Full Stack Programmer
 Location: Taguig City, Metro Manila, Philippines
 Email: johnwilbertgamis2022@gmail.com
 Phone: +63 938 083 6756
 Website: https://wilbertgamis.dev
 GitHub: https://github.com/WilWilbert123
-LinkedIn: https://www.linkedin.com/in/john-wilbert-gamis-7b0a39247
-Twitter: https://x.com/herroz7vsp?s=11
-Instagram: https://www.instagram.com/jw.gamis?igsi=MXJ3Y3VoNDJpbTNweA%3D%3D&utm_source=qr
-Bio: Junior Full Stack Programmer from the Philippines. BS IT grad from Veritas College of Irosin. Builds enterprise apps, mobile apps, and web solutions.
-Quote: "Code is poetry, and I write sonnets in JavaScript."
-Core Values: Innovation through simplicity, Quality over quantity, Continuous learning
-Weaknesses: Perfectionism, Overcommitting, Works late
-
-Skills:
-- Frontend: React.js, Next.js, TypeScript, JavaScript, HTML5, CSS3, Tailwind CSS
-- Mobile: React Native, Expo, Swift, Redux Toolkit, Google Maps API, Firebase FCM
-- Backend: Node.js, Python, Express.js
-- Databases: MongoDB, PostgreSQL, MySQL, MS SQL, Supabase
-- Enterprise: VB.NET, C#, Crystal Report
-- Cloud: Vercel, Netlify, AWS, Docker
-- Tools: Git, GitHub, Postman, Vite
-
-Experience:
-- Junior Full Stack Programmer at Business Machines Corporation (July 2024 - Present, Makati City): Building enterprise apps: Inventory + POS, Time Management, Asset Management, Canteen Billing systems. Built Node.js APIs with MS SQL, Optimized Stored Procedures, Designed Crystal Reports.
-- Systems Administration & Developer at Municipal Library (Nov 2023 - Jul 2024, Irosin, Sorsogon): Built complete library management system from scratch. Designed full system with automation, Managed network infrastructure.
-- React Native Developer at Banana Tech (Startup) (May 2023 - Nov 2023, Irosin, Sorsogon): Built mobile features for Everything Halal App. Integrated REST APIs, Optimized app performance.
+LinkedIn: https://linkedin.com/in/johnwilbertgamis
 
 Education:
-- BS Information Technology from Veritas College of Irosin (2018 - 2022). Courses: VB.NET, MySQL, Networking, System Analysis.
+- BS Information Technology - Veritas College of Irosin, Irosin Sorsogon (2022). Software Development & Systems Administration. Courses: Object-Oriented Programming (VB.NET), Database Design & Management (MySQL), Computer Networking & cable Infrastructure, System Analysis & Design, IT Fundamentals.
+- Capstone Project: E-BLOTTER SYSTEM. Served as a Lead Full-Stack Developer to architect and build the complete frontend UI, backend logic, and relational MySQL databases (Visual Basic.NET, MySQL, Crystal Report, XAMPP), centralizing real-time incident logging and cross-jurisdictional record tracking across 28 barangays and a central police headquarters.
 
-Certifications:
-- IBM Full-Stack JavaScript Developer (2026)
-- Google AI (2026)
-- AWS Certified AI Practitioner (2026)
-- SnowFlake Discover AI (2026)
+Work Experience:
+- Junior Full Stack Programmer at Business Machines Corporation (Jul 2024 - Present, Makati City): Multi-System Development & Maintenance: Engineered, maintained, and enhanced core enterprise application including Inventory + POS, Bisbio Time Management System, Fixed Asset Management System, Canteen Billing System, Play Monitoring System + POS, And Play Monitoring Kiosk. RESTFul API & Integration: Developed and deployed Node.js RESTful API to interface directly with local MS SQL Server databases, leveraging secure tunneling (Ngrok) and localtunnel to enable external applications to write and sync transaction data seamlessly. Database & Stored Procedure Engineering: Authored and optimized complex Stored Procedures, Views, and relational tables in MS SQL Server to handle transaction processing and business logic. Custom Reporting & Documentation: Designed and integrated customized receipts, billing outputs, and operational reports across multiple active systems using Crystal Reports.
+- Systems Administration & Developer at Municipal Library (Nov 2023 - Jul 2024, Irosin, Sorsogon): End-to-End Systems Engineering: Designed, developed, and deployed a complete library management system from scratch. Workflow Automation & Custom Features: Continuously enhance platform functionality by building custom features, automating manual record-keeping processes, and managing specialized digital workflows (including internet tenders). Network & Infrastructure Management: Configured and maintained local network infrastructure, network security, and internet configurations to ensure uninterrupted system uptime and public connectivity. Hardware & Systems Maintenance: Managed routine diagnostic checks, hardware repairs, and preventive maintenance on work station terminals, printers, and peripheral library equipment.
+- React Native Developer at Banana Tech (Startup Company) (May 2023 - Nov 2023, Irosin, Sorsogon): Feature Development & Maintenance (Everything Halal App): Architected and deployed new cross-platform mobile features while maintaining existing codebase stability across IOS and Android builds. Third-Party API Integration: Integrated RESTful third-party APIs and services. Mobile Perfomance Optimization: Enhanced application scalability and user experience by optimizing rendering performance, refactoring legacy code, and implementing client-side caching strategies.
 
 Projects:
-Personal:
-- UPPERCHAT: AI study assistant with Google Gemini API (Next.js, TypeScript, Gemini API)
-- SADAKO: Real-time mood analyzer with AI coaching (Vite, TypeScript, Supabase)
-- ECHO STAMP: Location-based journaling app (React Native, Node.js, MongoDB)
-- FILIFLIX: Movie streaming platform (Next.js, TMDB API, Supabase)
-Work:
-- E-BLOTTER SYSTEM: Government incident logging system (VB.NET, MySQL)
-- EVERYTHING HALAL: Mobile ecosystem for Muslim consumers (React Native, Node.js)
-- INVENTORY + POS: Retail POS with inventory tracking (VB.NET, MS SQL)
+- IROSINHUB: A comprehensive tourism web portal showcasing the Municipality of Irosin. It features a modern interface to explore all 28 barangays, discover local tourist spots, hot spring resorts, ecological parks, and cultural heritage sites. Built to promote local tourism with an interactive and responsive design.
+- UPPERCHAT | AI-Powered Multimodal Study Assistant (Personal Project | 2026): Engineered an Intelligent study-assistant platform using Next.js, TypeScript, and Google Gemini API to analyze uploaded notes, assignment photos, and textbook screenshots in real time. Implemented automated problem-solving workflows that output step-by-step solution, detailed concept explanations, and an interactive AI chatbot for follow up questions. Deployed on Vercel.
+- SADAKO | Real-Time Sentiment & Mood Advisor (Personal Project | 2026): Built a fast web application using Vite, TypeScript, and Tailwind CSS that evaluates user text inputs and emotional cues to analyze current mood states in real time. Integrated Google’s AI API to generate personalized advice and actionable and mindfulness prompts, leveraging Supabase for cloud database storage and auth.
+- ECHO STAMP PLATFORM | Location-Based Journaling app & Web Landing page (Personal Project | 2026): Built a feature-rich Android journaling app featuring interactive Google Maps Street View, real-time Weather API integration for location context, Redux state management, and buttery-smooth Lottie animations. Backend: Node.js/Express, MongoDB atlas, Cloudinary, Resend SMTP.
+- FILIFLIX | Full-Stack Movie & TV Streaming Web Application (Personal Project | 2026): Build a responsive movie and TV streaming application using Next.js 15 (App Router), TypeScript, and Tailwind CSS, integrating TMDB API for rich data metadata. Used Supabase for auth and database. Interactive embedded video player with custom playback control.
 
-Pricing (Freelance Work):
-- Project-Based: $500 - $3,000 (Best for complete applications, e-commerce, APIs)
-- Hourly: $15 - $30/hour (Best for consultation, code reviews, bug fixes)
-- Monthly Retainer: $500 - $1,500/month (Best for ongoing development and support)
+Certifications:
+- IBM Full-Stack JavaScript Developer - Coursera / IBM (Aug 2026)
+- Cybersecurity Fundamental with Cisco Tools - Coursera / Board Infinity (Aug 2026)
+- Google AI - Coursera / Google (Aug 2026)
+- Installing and Configuring Computer Systems - TESDA (Aug 2026)
+- Introduction to Computer Systems Servicing NC II - TESDA (Aug 2026)
+- Microsoft Cybersecurity Course: Security, Compliance, and Identity Fundamentals - TESDA (Aug 2026)
+- AWS Certified AI Practitioner - AWS (Aug 2026)
+- SnowFlake Discover AI - Snowflake (July 2026)
+- SMART Android Mobile Apps Development for Beginners - TESDA (Feb 2024)
+
+Additional Skills:
+- Mobile Development: React Native, Swift, Expo, Redux Toolkit, Lottie Animation, Google Maps API, Firebase FCM
+- Web & AI Stack: Next.js, React.js, TypeScript, Gemini Vision AI API, Vite, Tailwind CSS, HTML/CSS
+- Backend & Databases: Node.js, Express, Python, Nginx (Reverse Proxy / API Routing), MongoDB Atlas, MS SQL, MySQL, Stored Procedure, Database Views, Schema Design, Supabase, Cloudinary, Resend SMTP, REST API’s, NoSQL
+- Desktop & Enterprise: VB.NET, Crystal Report, C#
+- Tools & Platforms: Git, Github, Vercel, Netlify, Google Play Console, Postman, Visual Studio, VS Code, Antigravity
+- Languages: English (Fluent), Filipino (Native)
 `;
 
 export async function POST(req: Request) {
