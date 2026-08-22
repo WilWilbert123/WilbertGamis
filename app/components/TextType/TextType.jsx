@@ -22,6 +22,7 @@ const TextType = ({
     textColors = [],
     variableSpeed,
     onSentenceComplete,
+    onType,
     startOnVisible = false,
     reverseMode = false,
     asMarkdown = false,
@@ -112,6 +113,7 @@ const TextType = ({
                         () => {
                             setDisplayedText(prev => prev + processedText[currentCharIndex]);
                             setCurrentCharIndex(prev => prev + 1);
+                            if (onType) onType();
                         },
                         variableSpeed ? getRandomSpeed() : typingSpeed
                     );

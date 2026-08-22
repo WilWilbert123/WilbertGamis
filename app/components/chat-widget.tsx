@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, X, Send, Menu, Plus, History, Trash2, ArrowLeft } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
+import { Textarea } from "./ui/textarea";
+import { UAParser } from 'ua-parser-js';
 import { supabase } from "@/lib/supabase";
 import TextType from "./TextType/TextType";
 
@@ -27,9 +29,13 @@ export default function ChatWidget() {
   const [visitorData, setVisitorData] = useState<any>(null);
   const [status, setStatus] = useState<"idle" | "submitted" | "streaming" | "error">("idle");
   const stopRef = useRef<boolean>(false);
+  const trackingRef = useRef<boolean>(false);
 
   useEffect(() => {
     const trackVisitor = async () => {
+      if (trackingRef.current) return;
+      trackingRef.current = true;
+      
       const storedData = sessionStorage.getItem('visitor_data');
       if (storedData) {
         setVisitorData(JSON.parse(storedData));
@@ -39,6 +45,35 @@ export default function ChatWidget() {
       const userAgent = typeof window !== "undefined" ? window.navigator.userAgent : "";
       let location = "Earth";
       let ipv4 = "", ipv6 = "", isp = "", lat = 0, lng = 0;
+      let browser = "Unknown", os = "Unknown", deviceModel = "Desktop/Laptop", gpu = "Unknown GPU", connectionType = "Unknown";
+
+      if (typeof window !== "undefined") {
+        // Parse User Agent cleanly
+        const parser = new UAParser(window.navigator.userAgent);
+        browser = parser.getBrowser().name || "Unknown Browser";
+        os = parser.getOS().name || "Unknown OS";
+        deviceModel = parser.getDevice().model || parser.getDevice().vendor || (os === 'Mac OS' ? 'Mac' : 'PC');
+
+        // Extract GPU via WebGL
+        try {
+          const canvas = document.createElement('canvas');
+          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          if (gl) {
+            const debugInfo = (gl as WebGLRenderingContext).getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) {
+              gpu = (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+            }
+          }
+        } catch (e) {}
+
+        // Extract Network Connection (4G/5G/Wifi)
+        try {
+          const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+          if (conn && conn.effectiveType) {
+            connectionType = conn.effectiveType.toUpperCase();
+          }
+        } catch (e) {}
+      }
 
       const sessionId = Math.random().toString(36).substring(2, 15);
 
@@ -71,6 +106,11 @@ export default function ChatWidget() {
       const vData = {
         session_id: sessionId,
         device_info: userAgent,
+        browser,
+        os,
+        device_model: deviceModel,
+        gpu,
+        connection_type: connectionType,
         latitude: lat,
         longitude: lng,
         isp,
@@ -310,12 +350,17 @@ export default function ChatWidget() {
               <div className="text-left text-muted-foreground mt-4 px-4 font-mono text-[10px] leading-relaxed opacity-80">
                 {visitorData ? (
                   <TextType 
-                    text={`# Hello! I'm Mr Robot.\n\n### Ask me anything! By the way, before you ask, here is your data:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Use:** ${visitorData.device_info}\n**Internet Provider:** ${visitorData.isp}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit.`}
-                    typingSpeed={20}
+                    text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... this is the data you expose every time you visit a website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**GPU / Chip:** ${visitorData.gpu}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit.`}
+                    typingSpeed={40}
                     loop={false}
                     showCursor={true}
                     cursorCharacter="_"
                     asMarkdown={true}
+                    onType={() => {
+                      if (messagesEndRef.current) {
+                        messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+                      }
+                    }}
                   />
                 ) : (
                   <p className="animate-pulse">Acquiring target data...</p>
