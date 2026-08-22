@@ -85,3 +85,12 @@ body {
   background: var(--foreground);
   border: 2px solid var(--background);
 }
+
+/* Utility to hide scrollbar but keep scroll functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

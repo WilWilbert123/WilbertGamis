@@ -21,6 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 import ChatWidget from "./components/chat-widget";
+import GlobalChatWidget from "./components/global-chat-widget";
 
 export const metadata: Metadata = {
   title: "Wilbert | Software Engineer",
@@ -45,6 +46,7 @@ export default function RootLayout({
         >
           {children}
           <ChatWidget />
+          <GlobalChatWidget />
         </ThemeProvider>
       </body>
     </html>
