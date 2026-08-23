@@ -50,6 +50,8 @@ export default function GlobalChatWidget() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [isLocating, setIsLocating] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
@@ -100,34 +102,34 @@ export default function GlobalChatWidget() {
     let ipv4 = "", ipv6 = "", isp = "", lat = 0, lng = 0;
 
     try {
-      // 1. Fetch IPs independently to ensure we get both if available
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json");
-        ipv4 = (await res4.json()).ip;
-      } catch (e) { /* IPv4 failed */ }
+      const fetchWithTimeout = (url: string, ms = 3000) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
+        return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+      };
 
-      try {
-        const res6 = await fetch("https://api6.ipify.org?format=json");
-        ipv6 = (await res6.json()).ip;
-      } catch (e) { /* IPv6 failed or unavailable */ }
+      // Fetch all APIs concurrently to prevent long delays
+      const [res4, res6, resIpInfo] = await Promise.allSettled([
+        fetchWithTimeout("https://api.ipify.org?format=json", 2000).then(res => res.json()),
+        fetchWithTimeout("https://api6.ipify.org?format=json", 2000).then(res => res.json()),
+        fetchWithTimeout("https://ipinfo.io/json", 3000).then(res => res.json())
+      ]);
 
-      // 2. Fetch ISP and IP-based Location from ipinfo.io (More reliable, less rate limits)
-      try {
-        const ipRes = await fetch("https://ipinfo.io/json");
-        const ipData = await ipRes.json();
+      if (res4.status === "fulfilled" && res4.value.ip) ipv4 = res4.value.ip;
+      if (res6.status === "fulfilled" && res6.value.ip) ipv6 = res6.value.ip;
+      
+      if (resIpInfo.status === "fulfilled" && resIpInfo.value) {
+        const ipData = resIpInfo.value;
         isp = ipData.org || "";
-
         if (ipData.loc) {
           const parts = ipData.loc.split(',');
           lat = parseFloat(parts[0]) || 0;
           lng = parseFloat(parts[1]) || 0;
         }
-
         const city = ipData.city || "";
         const country = ipData.country || "";
         if (city) location = country ? `${city}, ${country}` : city;
-      } catch (e) { /* ipinfo failed */ }
-
+      }
     } catch (e) {
       console.warn("Could not fetch advanced details", e);
     }
@@ -167,28 +169,28 @@ export default function GlobalChatWidget() {
     setIsSetupComplete(true);
   };
 
-  // Fetch initial messages & setup realtime
+  // Fetch initial messages & setup realtime for messages
   useEffect(() => {
-    if (!sessionInfo.id || !isSetupComplete) return;
+    if (!sessionInfo.id) return; // Fetch even if not setup complete
 
     const fetchMessages = async () => {
       const { data, count } = await supabase
         .from("global_messages")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(15);
 
-      if (data) setMessages(data.reverse());
+      if (data) {
+        setMessages(data.reverse());
+        setHasMore(data.length === 15);
+      }
       if (count !== null) setTotalMessages(count);
     };
 
     fetchMessages();
 
-    // Setup Supabase Realtime for Messages & Presence
-    const room = supabase.channel("global_room");
-    channelRef.current = room;
-
-    room
+    const msgChannel = supabase.channel("global_messages_changes");
+    msgChannel
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "global_messages" }, (payload) => {
         const newMsg = payload.new as Message;
         if (newMsg.user_id === sessionInfo.id) return; // Already added optimistically
@@ -196,8 +198,23 @@ export default function GlobalChatWidget() {
         setMessages((prev) => [...prev, newMsg]);
         setTotalMessages((prev) => (prev !== null ? prev + 1 : null));
       })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(msgChannel);
+    };
+  }, [sessionInfo.id]);
+
+  // Setup presence tracking separately
+  useEffect(() => {
+    if (!sessionInfo.id || !isSetupComplete || !sessionInfo.username) return;
+
+    const presenceChannel = supabase.channel("global_presence");
+    channelRef.current = presenceChannel;
+
+    presenceChannel
       .on("presence", { event: "sync" }, () => {
-        const state = room.presenceState();
+        const state = presenceChannel.presenceState();
         let totalOnline = 0;
         const currentTyping: string[] = [];
 
@@ -217,7 +234,7 @@ export default function GlobalChatWidget() {
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
-          await room.track({
+          await presenceChannel.track({
             user_id: sessionInfo.id,
             username: sessionInfo.username,
             isTyping: false
@@ -226,9 +243,31 @@ export default function GlobalChatWidget() {
       });
 
     return () => {
-      supabase.removeChannel(room);
+      supabase.removeChannel(presenceChannel);
     };
   }, [sessionInfo.id, isSetupComplete, sessionInfo.username]);
+
+  const loadMoreMessages = async () => {
+    if (messages.length === 0 || isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+
+    const oldestMessage = messages[0];
+
+    const { data } = await supabase
+      .from("global_messages")
+      .select("*")
+      .lt("created_at", oldestMessage.created_at)
+      .order("created_at", { ascending: false })
+      .limit(15);
+
+    if (data) {
+      setMessages(prev => [...data.reverse(), ...prev]);
+      if (data.length < 15) {
+        setHasMore(false);
+      }
+    }
+    setIsLoadingMore(false);
+  };
 
   // Auto-scroll to bottom on new message
   useEffect(() => {
@@ -377,7 +416,19 @@ export default function GlobalChatWidget() {
                       no messages yet
                     </div>
                   ) : (
-                    messages.map((msg, i) => {
+                    <>
+                      {hasMore && (
+                        <div className="flex justify-center pb-4 pt-2">
+                          <button 
+                            onClick={loadMoreMessages}
+                            disabled={isLoadingMore}
+                            className="text-[10px] font-mono lowercase px-3 py-1.5 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground/60 disabled:opacity-50"
+                          >
+                            {isLoadingMore ? "loading..." : "load older messages"}
+                          </button>
+                        </div>
+                      )}
+                      {messages.map((msg, i) => {
                       const isMe = msg.user_id === sessionInfo.id && isSetupComplete;
                       const showHeader = i === 0 || messages[i - 1].user_id !== msg.user_id;
 
@@ -417,7 +468,8 @@ export default function GlobalChatWidget() {
                           </div>
                         </div>
                       );
-                    })
+                    })}
+                    </>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
