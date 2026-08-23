@@ -141,13 +141,13 @@ export default function Affiliations() {
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8 border-b-2 border-foreground/20 pb-4">
-                  <div className="flex items-center gap-3">
-                    <Quote size={24} className="text-primary" />
-                    <h3 className="font-['Press_Start_2P'] text-sm md:text-base">all_recommendations.log</h3>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Quote size={24} className="text-primary shrink-0" />
+                    <h3 className="font-['Press_Start_2P'] text-[10px] sm:text-xs md:text-base truncate">all_recommendations.log</h3>
                   </div>
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="p-2 hover:bg-foreground hover:text-background transition-colors pixel-border"
+                    className="p-2 hover:bg-foreground hover:text-background transition-colors pixel-border shrink-0 ml-2"
                   >
                     <X size={20} />
                   </button>
