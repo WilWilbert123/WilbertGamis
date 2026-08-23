@@ -31,12 +31,12 @@ export default function Navbar() {
           <div className="flex-shrink-0 flex items-center">
             <a href="#" className="font-['Press_Start_2P'] text-xl tracking-tighter">W.</a>
           </div>
-          
+
           {/* Right Side Controls */}
           <div className="flex items-center space-x-4 md:space-x-8">
-            
+
             {/* Desktop Links */}
-            <div className="hidden md:flex items-center space-x-8 font-['Silkscreen'] text-sm">
+            <div className="hidden md:flex items-center space-x-8 font-['Silkscreen'] text-sm order-0">
               {navLinks.map((link) => (
                 <a key={link.name} href={link.href} className="hover:underline underline-offset-4 decoration-2">
                   {link.name}
@@ -44,11 +44,15 @@ export default function Navbar() {
               ))}
             </div>
 
+            <div className="order-1 md:absolute md:right-1 md:top-6 flex items-center">
+              <LiveViewCount />
+            </div>
+
             {/* Theme Toggle (Visible on both) */}
             {mounted && (
               <button
                 onClick={toggleTheme}
-                className="p-2 pixel-border pixel-border-hover bg-background"
+                className="p-2 pixel-border pixel-border-hover bg-background order-2"
                 aria-label="Toggle Dark Mode"
               >
                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
@@ -58,13 +62,11 @@ export default function Navbar() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden p-2 border-2 border-foreground bg-background"
+              className="md:hidden p-2 border-2 border-foreground bg-background order-3"
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            
-            <LiveViewCount />
-            
+
           </div>
         </div>
       </div>

@@ -41,7 +41,7 @@ export default function LiveViewCount() {
   }, []);
 
   return (
-    <span className="fixed top-2 right-2 sm:top-5 sm:right-4 z-50 inline-flex items-center gap-2 text-xs text-green-500">
+    <span className="inline-flex items-center gap-2 text-xs text-green-500 translate-y-[2px] md:translate-y-0">
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
