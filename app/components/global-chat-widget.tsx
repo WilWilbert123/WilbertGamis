@@ -56,7 +56,17 @@ export default function GlobalChatWidget() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingLocalRef = useRef<boolean>(false);
+
+  // Sync with global Live View counter
+  useEffect(() => {
+    const handleSync = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) setOnlineCount(customEvent.detail);
+    };
+    window.addEventListener("live-view-sync", handleSync);
+    return () => window.removeEventListener("live-view-sync", handleSync);
+  }, []);
 
   // Initialization (Browser only)
   useEffect(() => {
@@ -109,26 +119,25 @@ export default function GlobalChatWidget() {
         return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
       };
 
-      // Fetch all APIs concurrently to prevent long delays
-      const [res4, res6, resIpInfo] = await Promise.allSettled([
-        fetchWithTimeout("https://api.ipify.org?format=json", 2000).then(res => res.json()),
-        fetchWithTimeout("https://api6.ipify.org?format=json", 2000).then(res => res.json()),
-        fetchWithTimeout("https://ipinfo.io/json", 3000).then(res => res.json())
-      ]);
+      let ipData = null;
+      try {
+        const geoRes = await fetchWithTimeout("https://get.geojs.io/v1/ip/geo.json", 3000);
+        ipData = await geoRes.json();
+      } catch (e) {
+        // Fallback to ipapi if geojs is blocked by strict tracking protection
+        try {
+          const fbRes = await fetchWithTimeout("https://ipapi.co/json/", 3000);
+          ipData = await fbRes.json();
+        } catch (e2) {}
+      }
 
-      if (res4.status === "fulfilled" && res4.value.ip) ipv4 = res4.value.ip;
-      if (res6.status === "fulfilled" && res6.value.ip) ipv6 = res6.value.ip;
-      
-      if (resIpInfo.status === "fulfilled" && resIpInfo.value) {
-        const ipData = resIpInfo.value;
-        isp = ipData.org || "";
-        if (ipData.loc) {
-          const parts = ipData.loc.split(',');
-          lat = parseFloat(parts[0]) || 0;
-          lng = parseFloat(parts[1]) || 0;
-        }
+      if (ipData) {
+        ipv4 = ipData.ip || "";
+        isp = ipData.organization_name || ipData.org || ipData.organization || "";
+        lat = parseFloat(ipData.latitude) || 0;
+        lng = parseFloat(ipData.longitude) || 0;
         const city = ipData.city || "";
-        const country = ipData.country || "";
+        const country = ipData.country_name || ipData.country || "";
         if (city) location = country ? `${city}, ${country}` : city;
       }
     } catch (e) {
@@ -220,17 +229,16 @@ export default function GlobalChatWidget() {
         const currentTyping: string[] = [];
 
         Object.keys(state).forEach((key) => {
-          totalOnline += state[key].length;
           state[key].forEach((presence: any) => {
-            if (presence.isTyping && presence.username !== sessionInfo.username) {
-              if (!currentTyping.includes(presence.username)) {
-                currentTyping.push(presence.username);
+            if (presence.isTyping && presence.username?.toLowerCase() !== sessionInfo.username?.toLowerCase()) {
+              const lowerName = presence.username.toLowerCase();
+              if (!currentTyping.includes(lowerName)) {
+                currentTyping.push(lowerName);
               }
             }
           });
         });
 
-        setOnlineCount(totalOnline);
         setTypingUsers(currentTyping);
       })
       .subscribe(async (status) => {
@@ -276,24 +284,21 @@ export default function GlobalChatWidget() {
   }, [messages, isOpen, isSetupComplete]);
 
   const handleTyping = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
+    const text = e.target.value;
+    setNewMessage(text);
 
     if (channelRef.current) {
-      await channelRef.current.track({
-        user_id: sessionInfo.id,
-        username: sessionInfo.username,
-        isTyping: e.target.value.length > 0
-      });
+      const isCurrentlyTyping = text.length > 0;
 
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-      typingTimeoutRef.current = setTimeout(async () => {
+      // Only send the WebSocket payload if the state ACTUALLY changed
+      if (isCurrentlyTyping !== isTypingLocalRef.current) {
+        isTypingLocalRef.current = isCurrentlyTyping;
         await channelRef.current.track({
           user_id: sessionInfo.id,
           username: sessionInfo.username,
-          isTyping: false
+          isTyping: isCurrentlyTyping
         });
-      }, 2000);
+      }
     }
   };
 
@@ -303,6 +308,15 @@ export default function GlobalChatWidget() {
 
     const content = newMessage.trim();
     setNewMessage("");
+
+    if (channelRef.current) {
+      isTypingLocalRef.current = false;
+      channelRef.current.track({
+        user_id: sessionInfo.id,
+        username: sessionInfo.username,
+        isTyping: false
+      });
+    }
 
     // Optimistic UI Update (Instantly show in chat)
     const optimisticMsg: Message = {
@@ -475,17 +489,7 @@ export default function GlobalChatWidget() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Typing Indicator */}
-                {typingUsers.length > 0 && (
-                  <div className="px-4 py-2 text-[9px] text-foreground/50 flex items-center gap-2 font-mono lowercase">
-                    <div className="flex gap-1">
-                      <span className="w-1 h-1 bg-foreground/50 rounded-full animate-bounce" />
-                      <span className="w-1 h-1 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                      <span className="w-1 h-1 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                    </div>
-                    {typingUsers.join(", ")} typing
-                  </div>
-                )}
+
 
                 {/* Input Area (Swaps based on setup status) */}
                 {!isSetupComplete ? (
@@ -512,22 +516,47 @@ export default function GlobalChatWidget() {
                     </div>
                   </form>
                 ) : (
-                  <form onSubmit={sendMessage} className="px-4 pb-4 pt-2 relative">
-                    <input
-                      type="text"
-                      value={newMessage}
-                      onChange={handleTyping}
-                      placeholder="type a message..."
-                      className="w-full bg-foreground/5 rounded-full px-4 py-3 pr-12 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground/20 placeholder:text-foreground/40 font-mono lowercase transition-all"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!newMessage.trim()}
-                      className="absolute right-6 top-1/2 -translate-y-1/2 text-foreground/50 hover:text-foreground disabled:opacity-30 transition-all"
-                    >
-                      <Send size={14} />
-                    </button>
-                  </form>
+                  <div className="relative px-4 pb-4 pt-2">
+                    {/* Typing Indicator */}
+                    <AnimatePresence>
+                      {typingUsers.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          className="absolute -top-3 left-7 text-[9px] font-mono lowercase text-foreground/50 flex items-center gap-1.5"
+                        >
+                          <span className="flex gap-0.5">
+                            <span className="w-1 h-1 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1 h-1 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1 h-1 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
+                          {typingUsers.length === 1 
+                            ? `${typingUsers[0]} is typing...` 
+                            : typingUsers.length === 2 
+                              ? `${typingUsers[0]} and ${typingUsers[1]} are typing...` 
+                              : `several people are typing...`}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <form onSubmit={sendMessage} className="relative">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={handleTyping}
+                        placeholder="type a message..."
+                        className="w-full bg-foreground/5 rounded-full px-4 py-3 pr-12 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground/20 placeholder:text-foreground/40 font-mono lowercase transition-all"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!newMessage.trim()}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/50 hover:text-foreground disabled:opacity-30 transition-all p-1"
+                      >
+                        <Send size={14} />
+                      </button>
+                    </form>
+                  </div>
                 )}
               </div>
             </motion.div>
