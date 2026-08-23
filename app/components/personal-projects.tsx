@@ -50,9 +50,9 @@ export default function PersonalProjects() {
                   <h3 className="font-['Press_Start_2P'] text-lg sm:text-xl md:text-2xl transition-transform duration-300 group-hover:translate-x-4">
                     {project.title}
                   </h3>
-                  {(project.subtext || project.description) && (
+                  {((project as any).subtext || project.description) && (
                     <div className="mt-2 space-y-1 transition-transform duration-300 group-hover:translate-x-4">
-                      {project.subtext && <p className="font-['Silkscreen'] text-xs sm:text-sm text-foreground/70 uppercase">{project.subtext}</p>}
+                      {(project as any).subtext && <p className="font-['Silkscreen'] text-xs sm:text-sm text-foreground/70 uppercase">{(project as any).subtext}</p>}
                       {project.description && <p className="font-mono text-xs sm:text-sm text-foreground/50 max-w-xl">{project.description}</p>}
                     </div>
                   )}

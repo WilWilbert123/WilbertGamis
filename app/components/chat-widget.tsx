@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, X, Send, Menu, Plus, History, Trash2, ArrowLeft } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
-import { Textarea } from "./ui/textarea";
+
 import { UAParser } from 'ua-parser-js';
 import { supabase } from "@/lib/supabase";
 import TextType from "./TextType/TextType";
@@ -418,7 +418,9 @@ export default function ChatWidget() {
                       showCursor={true}
                       cursorCharacter="_"
                       asMarkdown={true}
-                      onType={(index) => {
+                      variableSpeed={false}
+                      onSentenceComplete={() => {}}
+                      onType={(index: number) => {
                         if (messagesEndRef.current) {
                           messagesEndRef.current.scrollIntoView({ behavior: "auto" });
                         }

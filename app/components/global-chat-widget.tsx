@@ -45,7 +45,8 @@ export default function GlobalChatWidget() {
     latitude: 0,
     longitude: 0,
     isp: "",
-    ip_address: ""
+    ipv4: "",
+    ipv6: ""
   });
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [nameInput, setNameInput] = useState("");
