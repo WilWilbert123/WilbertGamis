@@ -42,11 +42,11 @@ export default function Hero() {
                     pointerStrength={0.38}
                     refraction={0.018}
                     ripple={true}
-                    fontSize="inherit"
-                    fontWeight="inherit"
-                    fontFamily="inherit"
-                    letterSpacing="inherit"
-                    lineHeight="inherit"
+                    fontSize={"inherit" as any}
+                    fontWeight={"inherit" as any}
+                    fontFamily={"inherit" as any}
+                    letterSpacing={"inherit" as any}
+                    lineHeight={"inherit" as any}
                     style={{ height: '3.5em', minHeight: '0', width: '100%' }}
                   />
                 ) : (

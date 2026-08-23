@@ -63,7 +63,7 @@ export default function Certifications() {
           font="16px 'Press Start 2P'"
           scrollSpeed={2}
           onActiveItemChange={setActiveIndex}
-          onItemClick={(index) => {
+          onItemClick={(index: number) => {
             if (items[index].link) {
               window.open(items[index].link, '_blank');
             }
