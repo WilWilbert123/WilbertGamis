@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Globe, X, Users, Type, Send, User } from "lucide-react";
+import { Globe, X, Users, Type, Send, User, MessageCircle, MessageSquare } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -36,10 +36,10 @@ export default function GlobalChatWidget() {
   const [onlineCount, setOnlineCount] = useState(0);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [totalMessages, setTotalMessages] = useState<number | null>(null);
-  
-  const [sessionInfo, setSessionInfo] = useState({ 
-    id: "", 
-    username: "", 
+
+  const [sessionInfo, setSessionInfo] = useState({
+    id: "",
+    username: "",
     location: "Earth",
     device_info: "",
     latitude: 0,
@@ -50,7 +50,7 @@ export default function GlobalChatWidget() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [isLocating, setIsLocating] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,7 +62,7 @@ export default function GlobalChatWidget() {
       savedId = Math.random().toString(36).substring(2, 15);
       localStorage.setItem("chat_session_id", savedId);
     }
-    
+
     const savedName = localStorage.getItem("chat_username");
     const savedLoc = localStorage.getItem("chat_location") || "Earth";
     const savedDevice = localStorage.getItem("chat_device") || "";
@@ -73,9 +73,9 @@ export default function GlobalChatWidget() {
     const savedIp6 = localStorage.getItem("chat_ipv6") || "";
 
     if (savedName) {
-      setSessionInfo({ 
-        id: savedId, 
-        username: savedName, 
+      setSessionInfo({
+        id: savedId,
+        username: savedName,
         location: savedLoc,
         device_info: savedDevice,
         latitude: savedLat,
@@ -98,14 +98,14 @@ export default function GlobalChatWidget() {
     const userAgent = typeof window !== "undefined" ? window.navigator.userAgent : "";
     let location = "Earth";
     let ipv4 = "", ipv6 = "", isp = "", lat = 0, lng = 0;
-    
+
     try {
       // 1. Fetch IPs independently to ensure we get both if available
       try {
         const res4 = await fetch("https://api.ipify.org?format=json");
         ipv4 = (await res4.json()).ip;
       } catch (e) { /* IPv4 failed */ }
-      
+
       try {
         const res6 = await fetch("https://api6.ipify.org?format=json");
         ipv6 = (await res6.json()).ip;
@@ -116,22 +116,22 @@ export default function GlobalChatWidget() {
         const ipRes = await fetch("https://ipinfo.io/json");
         const ipData = await ipRes.json();
         isp = ipData.org || "";
-        
+
         if (ipData.loc) {
           const parts = ipData.loc.split(',');
           lat = parseFloat(parts[0]) || 0;
           lng = parseFloat(parts[1]) || 0;
         }
-        
+
         const city = ipData.city || "";
         const country = ipData.country || "";
         if (city) location = country ? `${city}, ${country}` : city;
       } catch (e) { /* ipinfo failed */ }
-      
+
     } catch (e) {
       console.warn("Could not fetch advanced details", e);
     }
-    
+
     localStorage.setItem("chat_username", chosenName);
     localStorage.setItem("chat_location", location);
     localStorage.setItem("chat_device", userAgent);
@@ -140,10 +140,10 @@ export default function GlobalChatWidget() {
     localStorage.setItem("chat_isp", isp);
     localStorage.setItem("chat_ipv4", ipv4);
     localStorage.setItem("chat_ipv6", ipv6);
-    
-    setSessionInfo({ 
-      id: sessionId, 
-      username: chosenName, 
+
+    setSessionInfo({
+      id: sessionId,
+      username: chosenName,
       location,
       device_info: userAgent,
       latitude: lat,
@@ -157,12 +157,12 @@ export default function GlobalChatWidget() {
   const handleSaveName = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nameInput.trim()) return;
-    
+
     setIsLocating(true);
     const chosenName = nameInput.trim().substring(0, 20).toLowerCase(); // Lowercase for minimalist look
-    
+
     await fetchAdvancedData(chosenName, sessionInfo.id);
-    
+
     setIsLocating(false);
     setIsSetupComplete(true);
   };
@@ -177,7 +177,7 @@ export default function GlobalChatWidget() {
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
         .limit(50);
-      
+
       if (data) setMessages(data.reverse());
       if (count !== null) setTotalMessages(count);
     };
@@ -192,7 +192,7 @@ export default function GlobalChatWidget() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "global_messages" }, (payload) => {
         const newMsg = payload.new as Message;
         if (newMsg.user_id === sessionInfo.id) return; // Already added optimistically
-        
+
         setMessages((prev) => [...prev, newMsg]);
         setTotalMessages((prev) => (prev !== null ? prev + 1 : null));
       })
@@ -200,7 +200,7 @@ export default function GlobalChatWidget() {
         const state = room.presenceState();
         let totalOnline = 0;
         const currentTyping: string[] = [];
-        
+
         Object.keys(state).forEach((key) => {
           totalOnline += state[key].length;
           state[key].forEach((presence: any) => {
@@ -211,7 +211,7 @@ export default function GlobalChatWidget() {
             }
           });
         });
-        
+
         setOnlineCount(totalOnline);
         setTypingUsers(currentTyping);
       })
@@ -237,7 +237,7 @@ export default function GlobalChatWidget() {
 
   const handleTyping = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
-    
+
     if (channelRef.current) {
       await channelRef.current.track({
         user_id: sessionInfo.id,
@@ -246,7 +246,7 @@ export default function GlobalChatWidget() {
       });
 
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      
+
       typingTimeoutRef.current = setTimeout(async () => {
         await channelRef.current.track({
           user_id: sessionInfo.id,
@@ -263,7 +263,7 @@ export default function GlobalChatWidget() {
 
     const content = newMessage.trim();
     setNewMessage("");
-    
+
     // Optimistic UI Update (Instantly show in chat)
     const optimisticMsg: Message = {
       id: Math.random().toString(),
@@ -279,10 +279,10 @@ export default function GlobalChatWidget() {
       ipv4: sessionInfo.ipv4,
       ipv6: sessionInfo.ipv6
     };
-    
+
     setMessages((prev) => [...prev, optimisticMsg]);
     setTotalMessages((prev) => (prev !== null ? prev + 1 : null));
-    
+
     if (channelRef.current) {
       await channelRef.current.track({
         user_id: sessionInfo.id,
@@ -368,7 +368,7 @@ export default function GlobalChatWidget() {
               {/* Chat Room Messages (Always visible) */}
               <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Messages Area with Smooth Fade Top Mask */}
-                <div 
+                <div
                   className="flex-1 overflow-y-auto px-4 py-6 space-y-6 font-sans scrollbar-hide"
                   style={{ maskImage: "linear-gradient(to bottom, transparent, black 10%, black 100%)", WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 100%)" }}
                 >
@@ -380,16 +380,16 @@ export default function GlobalChatWidget() {
                     messages.map((msg, i) => {
                       const isMe = msg.user_id === sessionInfo.id && isSetupComplete;
                       const showHeader = i === 0 || messages[i - 1].user_id !== msg.user_id;
-                      
+
                       return (
                         <div key={msg.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[90%] ${isMe ? "ml-auto" : "mr-auto"}`}>
-                          
+
                           {/* Message Header (Avatar + Name + Location + Time) */}
                           {showHeader && (
                             <div className={`flex items-center gap-2 mb-1.5 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-                              <img 
-                                src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${msg.username}`} 
-                                alt="avatar" 
+                              <img
+                                src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${msg.username}`}
+                                alt="avatar"
                                 className="w-5 h-5 rounded-full border border-foreground/10 bg-background"
                               />
                               <div className={`flex items-center gap-1.5 text-[9px] font-mono lowercase text-foreground/50 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
@@ -408,11 +408,10 @@ export default function GlobalChatWidget() {
 
                           {/* Message Bubble (Pill shape, borderless) */}
                           <div
-                            className={`px-4 py-2 rounded-2xl text-sm ${
-                              isMe
+                            className={`px-4 py-2 rounded-2xl text-sm ${isMe
                                 ? "bg-foreground text-background"
                                 : "bg-foreground/5 text-foreground"
-                            }`}
+                              }`}
                           >
                             {msg.content}
                           </div>
@@ -489,17 +488,15 @@ export default function GlobalChatWidget() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsOpen(true)}
-              className="w-12 h-12 bg-background border border-foreground/20 rounded-full flex items-center justify-center text-foreground shadow-lg relative overflow-hidden"
+              className="text-foreground transition-transform flex flex-col items-center justify-center p-2 relative"
             >
-              <Globe size={20} className="relative z-10 opacity-70" />
-              
-              {/* Online badge */}
-              {isSetupComplete && onlineCount > 0 && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-foreground rounded-full border-2 border-background z-20 animate-pulse" />
-              )}
+              <div className="relative flex items-center justify-center w-[45px] h-[45px]">
+                <MessageSquare size={45} className="absolute z-10 opacity-80" />
+                <Globe size={24} className="absolute z-10 opacity-80 mb-1 animate-spin" style={{ animationDuration: '4s' }} />
+              </div>
             </motion.button>
           )}
         </AnimatePresence>
