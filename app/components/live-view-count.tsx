@@ -22,7 +22,12 @@ export default function LiveViewCount() {
       const state = channel.presenceState();
       // Count the number of distinct visitor keys
       const numUsers = Object.keys(state).length;
-      setCount(numUsers > 0 ? numUsers : 1);
+      const finalCount = numUsers > 0 ? numUsers : 1;
+      setCount(finalCount);
+      
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('live-view-sync', { detail: finalCount }));
+      }
     });
 
     // Subscribe to the channel and track this user
