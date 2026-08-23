@@ -37,25 +37,17 @@ export default function ChatWidget() {
       if (trackingRef.current) return;
       trackingRef.current = true;
 
-      const storedData = sessionStorage.getItem('visitor_data');
-      if (storedData) {
-        setVisitorData(JSON.parse(storedData));
-        return;
-      }
-
       const userAgent = typeof window !== "undefined" ? window.navigator.userAgent : "";
       let location = "Earth";
       let ipv4 = "", ipv6 = "", isp = "", lat = 0, lng = 0;
       let browser = "Unknown", os = "Unknown", deviceModel = "Desktop/Laptop", gpu = "Unknown GPU", connectionType = "Unknown";
 
       if (typeof window !== "undefined") {
-        // Parse User Agent cleanly
         const parser = new UAParser(window.navigator.userAgent);
         browser = parser.getBrowser().name || "Unknown Browser";
         os = parser.getOS().name || "Unknown OS";
         deviceModel = parser.getDevice().model || parser.getDevice().vendor || (os === 'Mac OS' ? 'Mac' : 'PC');
 
-        // Extract GPU via WebGL
         try {
           const canvas = document.createElement('canvas');
           const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -67,7 +59,6 @@ export default function ChatWidget() {
           }
         } catch (e) { }
 
-        // Extract Network Connection (4G/5G/Wifi)
         try {
           const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
           if (conn && conn.effectiveType) {
@@ -122,17 +113,36 @@ export default function ChatWidget() {
 
       setVisitorData(vData);
 
-      try {
-        const { error } = await supabase.from("portfolio_visitors").insert([vData]);
-        if (error) {
-          console.error("Supabase insert error:", error);
-        } else {
-          sessionStorage.setItem('visitor_data', JSON.stringify(vData));
-          sessionStorage.setItem('visitor_tracked', 'true');
-          console.log("Visitor tracked successfully!");
+      // Check if we need to save this to Supabase
+      const storedData = localStorage.getItem('visitor_data');
+      const lastVisitDate = localStorage.getItem('visitor_last_date');
+      const today = new Date().toDateString();
+      
+      let previousData = null;
+      if (storedData) {
+        try {
+          previousData = JSON.parse(storedData);
+        } catch (e) { }
+      }
+
+      const ipChanged = previousData ? (previousData.ipv4 !== ipv4 || previousData.isp !== isp) : false;
+      const newDay = lastVisitDate !== today;
+
+      if (!previousData || ipChanged || newDay) {
+        try {
+          const { error } = await supabase.from("portfolio_visitors").insert([vData]);
+          if (error) {
+            console.error("Supabase insert error:", error);
+          } else {
+            localStorage.setItem('visitor_data', JSON.stringify(vData));
+            localStorage.setItem('visitor_last_date', today);
+            console.log("Visitor tracked successfully due to new visit, IP change, or new day!");
+          }
+        } catch (e) {
+          console.warn("Exception saving visitor to supabase", e);
         }
-      } catch (e) {
-        console.warn("Exception saving visitor to supabase", e);
+      } else {
+        console.log("Visitor already tracked today with the same IP.");
       }
     };
 
