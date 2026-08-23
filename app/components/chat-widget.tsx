@@ -41,12 +41,44 @@ export default function ChatWidget() {
       let location = "Earth";
       let ipv4 = "", ipv6 = "", isp = "", lat = 0, lng = 0;
       let browser = "Unknown", os = "Unknown", deviceModel = "Desktop/Laptop", gpu = "Unknown GPU", connectionType = "Unknown";
+      let screenResolution = "Unknown";
+      let batteryLevel = "Unknown";
+      let timezone = "Unknown";
+      let cpuCores = "Unknown";
+      let ram = "Unknown";
+      let referrerUrl = "Direct/None";
 
       if (typeof window !== "undefined") {
         const parser = new UAParser(window.navigator.userAgent);
         browser = parser.getBrowser().name || "Unknown Browser";
         os = parser.getOS().name || "Unknown OS";
         deviceModel = parser.getDevice().model || parser.getDevice().vendor || (os === 'Mac OS' ? 'Mac' : 'PC');
+
+        screenResolution = `${window.screen.width}x${window.screen.height}`;
+
+        try {
+          timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
+        } catch (e) { }
+
+        if (navigator.hardwareConcurrency) {
+          cpuCores = navigator.hardwareConcurrency.toString();
+        }
+
+        if ((navigator as any).deviceMemory) {
+          ram = (navigator as any).deviceMemory + " GB";
+        }
+
+        if (document.referrer) {
+          referrerUrl = document.referrer;
+        }
+
+        try {
+          const nav = navigator as any;
+          if (nav.getBattery) {
+            const battery = await nav.getBattery();
+            batteryLevel = `${Math.round(battery.level * 100)}%${battery.charging ? ' (Charging)' : ''}`;
+          }
+        } catch (e) { }
 
         try {
           const canvas = document.createElement('canvas');
@@ -108,7 +140,13 @@ export default function ChatWidget() {
         isp,
         ipv4,
         ipv6,
-        location
+        location,
+        screen_resolution: screenResolution,
+        battery_level: batteryLevel,
+        timezone: timezone,
+        cpu_cores: cpuCores,
+        ram: ram,
+        referrer_url: referrerUrl
       };
 
       setVisitorData(vData);
@@ -117,7 +155,7 @@ export default function ChatWidget() {
       const storedData = localStorage.getItem('visitor_data');
       const lastVisitDate = localStorage.getItem('visitor_last_date');
       const today = new Date().toDateString();
-      
+
       let previousData = null;
       if (storedData) {
         try {
@@ -364,7 +402,7 @@ export default function ChatWidget() {
                 {visitorData ? (
                   <div className="relative">
                     <TextType
-                      text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... This is the data you expose when you visit this website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**GPU / Chip:** ${visitorData.gpu}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit. We don't need your permission here.`}
+                      text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... This is the data you expose when you visit this website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**Screen Resolution:** ${visitorData.screen_resolution || "Unknown"}\n**GPU / Chip:** ${visitorData.gpu}\n**CPU Cores:** ${visitorData.cpu_cores || "Unknown"}\n**RAM:** ${visitorData.ram || "Unknown"}\n**Battery Level:** ${visitorData.battery_level || "Unknown"}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Timezone:** ${visitorData.timezone || "Unknown"}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**Referrer URL:** ${visitorData.referrer_url || "Direct/None"}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit. We don't need your permission here.`}
                       typingSpeed={40}
                       loop={false}
                       showCursor={true}
