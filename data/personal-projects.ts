@@ -15,42 +15,42 @@ export const personalProjects = [
   },
   {
     title: "SADAKO",
-    link: "https://sadako444.vercel.app/",
+    link: "https://sadako.wilbert.pro/",
     image: "/asset/personalproject/Sadako.png",
     description: "An interactive AI emotional analysis and chat interface.",
     tech: ["React 19", "Vite", "TypeScript", "React Router", "Tailwind CSS 4", "Lucide React", "Zustand", "Three.js", "Postprocessing", "Supabase", "Google GenAI", "OpenAI", "Date-fns", "UUID", "Oxlint"]
   },
   {
     title: "UPPERCHAT",
-    link: "https://upperchat.vercel.app/",
+    link: "https://upperchat.wilbert.pro/",
     image: "/asset/personalproject/UpperChat.png",
     description: "Real-time student collaboration and messaging platform.",
     tech: ["Next.js", "React 19", "TypeScript", "Supabase", "Tailwind CSS 4", "Tailwind Merge", "clsx", "Next Themes", "Lucide React", "Framer Motion", "Canvas Confetti", "ESLint", "Google Gemini AI"]
   },
   {
     title: "FILIFLIX",
-    link: "https://filiflix.vercel.app/",
+    link: "https://filiflix.wilbert.pro/",
     image: "/asset/personalproject/filiflix.png",
     description: "A streaming and movie discovery platform featuring local and global content.",
     tech: ["Next.js 16.3", "React 19", "TypeScript", "Tailwind CSS 4", "Framer Motion", "Lucide React", "Tailwind Merge", "CLSX", "Recharts", "Zustand", "Supabase", "Supabase JS", "Supabase SSR", "Axios", "TMDB API", "@movie-web/providers", "yt-search", "ua-parser-js"]
   },
   {
     title: "IROSINHUB",
-    link: "#",
+    link: "https://irosinhub.wilbert.pro/",
     image: "/asset/personalproject/IrosinHub.png",
     description: "A modern web application featuring advanced declarative animations, fluid 3D graphics, and robust form validation.",
     tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Supabase", "Google Gemini API", "React Hook Form", "Zod", "Framer Motion", "Tailwind Animate CSS", "OGL", "ESLint", "PostCSS"]
   },
   {
     title: "PORTFOLIO",
-    link: "#",
+    link: "https://wilbert.pro/",
     image: "",
     description: "My personal portfolio highlighting my latest builds and technical stack.",
     tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Framer Motion", "OGL WebGL", "Lucide React", "Google Gemini API", "WebSockets"]
   },
   {
     title: "PREVIOUS PORTFOLIO",
-    link: "https://wilbert-gamis.vercel.app/",
+    link: "https://portfolio.wilbert.pro/",
     image: "/asset/personalproject/wilbertgamis.png",
     description: "My legacy developer portfolio demonstrating previous design iterations.",
     tech: ["React 19", "Vite 8", "Vanilla CSS", "Three.js", "React Three Fiber", "React Three Drei", "React Three Rapier", "OGL", "Meshline", "Framer Motion", "GSAP", "React Use Gesture", "React Intersection Observer", "React Icons", "FontAwesome", "React GitHub Calendar"]

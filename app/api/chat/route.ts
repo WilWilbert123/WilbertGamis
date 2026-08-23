@@ -31,7 +31,7 @@ Title: Junior Full Stack Programmer
 Location: Taguig City, Metro Manila, Philippines
 Email: johnwilbertgamis2022@gmail.com
 Phone: +63 938 083 6756
-Website: https://wilbertgamis.dev
+Website: https://wilbert.pro
 GitHub: https://github.com/WilWilbert123
 LinkedIn: https://linkedin.com/in/johnwilbertgamis
 
@@ -45,11 +45,11 @@ Work Experience:
 - React Native Developer at Banana Tech (Startup Company) (May 2023 - Nov 2023, Irosin, Sorsogon): Feature Development & Maintenance (Everything Halal App): Architected and deployed new cross-platform mobile features while maintaining existing codebase stability across IOS and Android builds. Third-Party API Integration: Integrated RESTful third-party APIs and services. Mobile Perfomance Optimization: Enhanced application scalability and user experience by optimizing rendering performance, refactoring legacy code, and implementing client-side caching strategies.
 
 Projects:
-- IROSINHUB: A comprehensive tourism web portal showcasing the Municipality of Irosin. It features a modern interface to explore all 28 barangays, discover local tourist spots, hot spring resorts, ecological parks, and cultural heritage sites. Built to promote local tourism with an interactive and responsive design.
-- UPPERCHAT | AI-Powered Multimodal Study Assistant (Personal Project | 2026): Engineered an Intelligent study-assistant platform using Next.js, TypeScript, and Google Gemini API to analyze uploaded notes, assignment photos, and textbook screenshots in real time. Implemented automated problem-solving workflows that output step-by-step solution, detailed concept explanations, and an interactive AI chatbot for follow up questions. Deployed on Vercel.
-- SADAKO | Real-Time Sentiment & Mood Advisor (Personal Project | 2026): Built a fast web application using Vite, TypeScript, and Tailwind CSS that evaluates user text inputs and emotional cues to analyze current mood states in real time. Integrated Google’s AI API to generate personalized advice and actionable and mindfulness prompts, leveraging Supabase for cloud database storage and auth.
-- ECHO STAMP PLATFORM | Location-Based Journaling app & Web Landing page (Personal Project | 2026): Built a feature-rich Android journaling app featuring interactive Google Maps Street View, real-time Weather API integration for location context, Redux state management, and buttery-smooth Lottie animations. Backend: Node.js/Express, MongoDB atlas, Cloudinary, Resend SMTP.
-- FILIFLIX | Full-Stack Movie & TV Streaming Web Application (Personal Project | 2026): Build a responsive movie and TV streaming application using Next.js 15 (App Router), TypeScript, and Tailwind CSS, integrating TMDB API for rich data metadata. Used Supabase for auth and database. Interactive embedded video player with custom playback control.
+- IROSINHUB (https://irosinhub.wilbert.pro/): A comprehensive tourism web portal showcasing the Municipality of Irosin. It features a modern interface to explore all 28 barangays, discover local tourist spots, hot spring resorts, ecological parks, and cultural heritage sites. Built to promote local tourism with an interactive and responsive design.
+- UPPERCHAT | AI-Powered Multimodal Study Assistant (https://upperchat.wilbert.pro/): Engineered an Intelligent study-assistant platform using Next.js, TypeScript, and Google Gemini API to analyze uploaded notes, assignment photos, and textbook screenshots in real time. Implemented automated problem-solving workflows that output step-by-step solution, detailed concept explanations, and an interactive AI chatbot for follow up questions.
+- SADAKO | Real-Time Sentiment & Mood Advisor (https://sadako.wilbert.pro/): Built a fast web application using Vite, TypeScript, and Tailwind CSS that evaluates user text inputs and emotional cues to analyze current mood states in real time. Integrated Google’s AI API to generate personalized advice and actionable and mindfulness prompts, leveraging Supabase for cloud database storage and auth.
+- ECHO STAMP PLATFORM | Location-Based Journaling app & Web Landing page: Built a feature-rich Android journaling app featuring interactive Google Maps Street View, real-time Weather API integration for location context, Redux state management, and buttery-smooth Lottie animations. Backend: Node.js/Express, MongoDB atlas, Cloudinary, Resend SMTP.
+- FILIFLIX | Full-Stack Movie & TV Streaming Web Application (https://filiflix.wilbert.pro/): Build a responsive movie and TV streaming application using Next.js 15 (App Router), TypeScript, and Tailwind CSS, integrating TMDB API for rich data metadata. Used Supabase for auth and database. Interactive embedded video player with custom playback control.
 
 Certifications:
 - IBM Full-Stack JavaScript Developer - Coursera / IBM (Aug 2026)
