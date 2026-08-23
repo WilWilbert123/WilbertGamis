@@ -412,7 +412,9 @@ export default function ChatWidget() {
             loop
             muted
             playsInline
-            className={`absolute top-30 -right-2 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 z-0 ${showMask ? 'opacity-40' : 'opacity-0'}`}
+            className={`absolute top-30 -right-2 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 z-0 ${
+              (messages.length > 0 || isDrawerOpen) ? 'opacity-0' : (showMask ? 'opacity-40' : 'opacity-0')
+            }`}
           />
 
           {/* Messages Area */}
