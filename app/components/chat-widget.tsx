@@ -395,6 +395,16 @@ export default function ChatWidget() {
             </div>
           </div>
 
+          {/* Mask Background Video */}
+          <video
+            src="/asset/mask/mask.MOV"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={`absolute top-30 -right-2 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 z-0 ${showMask ? 'opacity-40' : 'opacity-0'}`}
+          />
+
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 font-mono text-sm relative z-0">
             {messages.length === 0 ? (
@@ -417,14 +427,6 @@ export default function ChatWidget() {
                           setShowMask(true);
                         }
                       }}
-                    />
-                    <video
-                      src="/asset/mask/mask.MOV"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className={`absolute top-13 -right-12 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 ${showMask ? 'opacity-40' : 'opacity-0'}`}
                     />
                   </div>
                 ) : (
