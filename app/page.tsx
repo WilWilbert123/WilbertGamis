@@ -7,10 +7,12 @@ import Certifications from "./components/certifications";
 import Affiliations from "./components/affiliations";
 import GithubActivity from "./components/github-activity";
 import Contact from "./components/contact";
+import IntroSplash from "./components/intro-splash";
 
 export default function Home() {
   return (
     <>
+      <IntroSplash />
       <Navbar />
       <main className="flex-1">
         <Hero />
