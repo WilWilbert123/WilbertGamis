@@ -66,6 +66,8 @@ export default function ChatWidget() {
 
         if ((navigator as any).deviceMemory) {
           ram = (navigator as any).deviceMemory + " GB";
+        } else {
+          ram = (os === 'iOS' || os === 'Mac OS') ? 'Restricted by Apple' : 'Unknown';
         }
 
         if (document.referrer) {
@@ -77,8 +79,12 @@ export default function ChatWidget() {
           if (nav.getBattery) {
             const battery = await nav.getBattery();
             batteryLevel = `${Math.round(battery.level * 100)}%${battery.charging ? ' (Charging)' : ''}`;
+          } else {
+            batteryLevel = (os === 'iOS' || os === 'Mac OS') ? 'Restricted by Apple' : 'Unknown';
           }
-        } catch (e) { }
+        } catch (e) {
+          batteryLevel = (os === 'iOS' || os === 'Mac OS') ? 'Restricted by Apple' : 'Unknown';
+        }
 
         try {
           const canvas = document.createElement('canvas');
@@ -95,8 +101,12 @@ export default function ChatWidget() {
           const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
           if (conn && conn.effectiveType) {
             connectionType = conn.effectiveType.toUpperCase();
+          } else {
+            connectionType = (os === 'iOS' || os === 'Mac OS') ? 'Restricted by Apple' : 'UNKNOWN';
           }
-        } catch (e) { }
+        } catch (e) {
+          connectionType = (os === 'iOS' || os === 'Mac OS') ? 'Restricted by Apple' : 'UNKNOWN';
+        }
       }
 
       const sessionId = Math.random().toString(36).substring(2, 15);
