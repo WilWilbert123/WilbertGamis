@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import LiveViewCount from "./live-view-count";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -31,13 +32,19 @@ export default function Navbar() {
             <a href="#" className="font-['Press_Start_2P'] text-xl tracking-tighter">W.</a>
           </div>
           
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8 font-['Silkscreen'] text-sm">
-            {navLinks.map((link) => (
-              <a key={link.name} href={link.href} className="hover:underline underline-offset-4 decoration-2">
-                {link.name}
-              </a>
-            ))}
+          {/* Right Side Controls */}
+          <div className="flex items-center space-x-4 md:space-x-8">
+            
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center space-x-8 font-['Silkscreen'] text-sm">
+              {navLinks.map((link) => (
+                <a key={link.name} href={link.href} className="hover:underline underline-offset-4 decoration-2">
+                  {link.name}
+                </a>
+              ))}
+            </div>
+
+            {/* Theme Toggle (Visible on both) */}
             {mounted && (
               <button
                 onClick={toggleTheme}
@@ -47,25 +54,17 @@ export default function Navbar() {
                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               </button>
             )}
-          </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center space-x-4">
-            {mounted && (
-              <button
-                onClick={toggleTheme}
-                className="p-2 pixel-border bg-background"
-                aria-label="Toggle Dark Mode"
-              >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-            )}
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 border-2 border-foreground bg-background"
+              className="md:hidden p-2 border-2 border-foreground bg-background"
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
+            
+            <LiveViewCount />
+            
           </div>
         </div>
       </div>
