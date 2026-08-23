@@ -25,8 +25,8 @@ export default function Home() {
         <Contact />
       </main>
       <footer className="border-t-2 border-foreground py-8 text-center bg-background">
-        <p className="font-['Silkscreen'] text-sm opacity-80">
-          © {new Date().getFullYear()} WILBERT. ALL RIGHTS RESERVED.
+        <p className="font-['Silkscreen'] text-sm opacity-80 flex items-center justify-center flex-wrap gap-4">
+          <span>© {new Date().getFullYear()} WILBERT. ALL RIGHTS RESERVED.</span>
         </p>
       </footer>
     </>
