@@ -46,7 +46,7 @@ export const personalProjects = [
     link: "https://wilbert.pro/",
     image: "/asset/personalproject/portfolio.png",
     description: "My personal portfolio highlighting my latest builds and technical stack.",
-    tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Framer Motion", "OGL WebGL", "Lucide React", "Google Gemini API", "WebSockets"]
+    tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Supabase", "PostgreSQL", "Framer Motion", "GSAP", "OGL WebGL", "Google Gemini API", "Vercel AI SDK", "UAParser.js", "WebSockets"]
   },
   {
     title: "PREVIOUS PORTFOLIO",
