@@ -121,23 +121,31 @@ export default function GlobalChatWidget() {
 
       let ipData = null;
       try {
-        const geoRes = await fetchWithTimeout("https://get.geojs.io/v1/ip/geo.json", 3000);
+        const geoRes = await fetchWithTimeout("https://ipinfo.io/json", 3000);
         ipData = await geoRes.json();
       } catch (e) {
-        // Fallback to ipapi if geojs is blocked by strict tracking protection
+        // Fallback if blocked
         try {
           const fbRes = await fetchWithTimeout("https://ipapi.co/json/", 3000);
           ipData = await fbRes.json();
-        } catch (e2) {}
+        } catch (e2) { }
       }
 
       if (ipData) {
         ipv4 = ipData.ip || "";
-        isp = ipData.organization_name || ipData.org || ipData.organization || "";
-        lat = parseFloat(ipData.latitude) || 0;
-        lng = parseFloat(ipData.longitude) || 0;
+        isp = ipData.org || ipData.organization_name || ipData.organization || "";
+
+        if (ipData.loc) {
+          const parts = ipData.loc.split(',');
+          lat = parseFloat(parts[0]) || 0;
+          lng = parseFloat(parts[1]) || 0;
+        } else {
+          lat = parseFloat(ipData.latitude) || 0;
+          lng = parseFloat(ipData.longitude) || 0;
+        }
+
         const city = ipData.city || "";
-        const country = ipData.country_name || ipData.country || "";
+        const country = ipData.country || ipData.country_name || "";
         if (city) location = country ? `${city}, ${country}` : city;
       }
     } catch (e) {
@@ -434,7 +442,7 @@ export default function GlobalChatWidget() {
                     <>
                       {hasMore && (
                         <div className="flex justify-center pb-4 pt-2">
-                          <button 
+                          <button
                             onClick={loadMoreMessages}
                             disabled={isLoadingMore}
                             className="text-[10px] font-mono lowercase px-3 py-1.5 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground/60 disabled:opacity-50"
@@ -444,46 +452,46 @@ export default function GlobalChatWidget() {
                         </div>
                       )}
                       {messages.map((msg, i) => {
-                      const isMe = msg.user_id === sessionInfo.id && isSetupComplete;
-                      const showHeader = i === 0 || messages[i - 1].user_id !== msg.user_id;
+                        const isMe = msg.user_id === sessionInfo.id && isSetupComplete;
+                        const showHeader = i === 0 || messages[i - 1].user_id !== msg.user_id;
 
-                      return (
-                        <div key={msg.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[90%] ${isMe ? "ml-auto" : "mr-auto"}`}>
+                        return (
+                          <div key={msg.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[90%] ${isMe ? "ml-auto" : "mr-auto"}`}>
 
-                          {/* Message Header (Avatar + Name + Location + Time) */}
-                          {showHeader && (
-                            <div className={`flex items-center gap-2 mb-1.5 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-                              <img
-                                src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${msg.username}`}
-                                alt="avatar"
-                                className="w-5 h-5 rounded-full border border-foreground/10 bg-background"
-                              />
-                              <div className={`flex items-center gap-1.5 text-[9px] font-mono lowercase text-foreground/50 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-                                <span className="font-bold text-foreground/80">{msg.username}</span>
-                                {msg.location && (
-                                  <>
-                                    <span>·</span>
-                                    <span>{msg.location}</span>
-                                  </>
-                                )}
-                                <span>·</span>
-                                <span>{formatTime(msg.created_at)}</span>
+                            {/* Message Header (Avatar + Name + Location + Time) */}
+                            {showHeader && (
+                              <div className={`flex items-center gap-2 mb-1.5 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                                <img
+                                  src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${msg.username}`}
+                                  alt="avatar"
+                                  className="w-5 h-5 rounded-full border border-foreground/10 bg-background"
+                                />
+                                <div className={`flex items-center gap-1.5 text-[9px] font-mono lowercase text-foreground/50 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                                  <span className="font-bold text-foreground/80">{msg.username}</span>
+                                  {msg.location && (
+                                    <>
+                                      <span>·</span>
+                                      <span>{msg.location}</span>
+                                    </>
+                                  )}
+                                  <span>·</span>
+                                  <span>{formatTime(msg.created_at)}</span>
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {/* Message Bubble (Pill shape, borderless) */}
-                          <div
-                            className={`px-4 py-2 rounded-2xl text-sm ${isMe
+                            {/* Message Bubble (Pill shape, borderless) */}
+                            <div
+                              className={`px-4 py-2 rounded-2xl text-sm ${isMe
                                 ? "bg-foreground text-background"
                                 : "bg-foreground/5 text-foreground"
-                              }`}
-                          >
-                            {msg.content}
+                                }`}
+                            >
+                              {msg.content}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                     </>
                   )}
                   <div ref={messagesEndRef} />
@@ -531,10 +539,10 @@ export default function GlobalChatWidget() {
                             <span className="w-1 h-1 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                             <span className="w-1 h-1 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                           </span>
-                          {typingUsers.length === 1 
-                            ? `${typingUsers[0]} is typing...` 
-                            : typingUsers.length === 2 
-                              ? `${typingUsers[0]} and ${typingUsers[1]} are typing...` 
+                          {typingUsers.length === 1
+                            ? `${typingUsers[0]} is typing...`
+                            : typingUsers.length === 2
+                              ? `${typingUsers[0]} and ${typingUsers[1]} are typing...`
                               : `several people are typing...`}
                         </motion.div>
                       )}

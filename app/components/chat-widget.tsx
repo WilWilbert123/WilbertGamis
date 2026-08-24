@@ -176,7 +176,21 @@ export default function ChatWidget() {
       const ipChanged = previousData ? (previousData.ipv4 !== ipv4 || previousData.isp !== isp) : false;
       const newDay = lastVisitDate !== today;
 
-      if (!previousData || ipChanged || newDay) {
+      const isBot =
+        (userAgent && userAgent.toLowerCase().includes('bot')) ||
+        (userAgent && userAgent.toLowerCase().includes('crawler')) ||
+        (userAgent && userAgent.toLowerCase().includes('spider')) ||
+        (gpu && gpu.toLowerCase().includes('swiftshader')) ||
+        isp.toLowerCase().includes('akamai') ||
+        isp.toLowerCase().includes('hostroyale') ||
+        isp.toLowerCase().includes('google') ||
+        isp.toLowerCase().includes('amazon') ||
+        isp.toLowerCase().includes('datacenter') ||
+        isp.toLowerCase().includes('m247') ||
+        cpuCores === '32' ||
+        cpuCores === '128';
+
+      if (!isBot && (!previousData || ipChanged || newDay)) {
         try {
           const { error } = await supabase.from("portfolio_visitors").insert([vData]);
           if (error) {
@@ -412,9 +426,8 @@ export default function ChatWidget() {
             loop
             muted
             playsInline
-            className={`absolute top-30 -right-2 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 z-0 ${
-              (messages.length > 0 || isDrawerOpen) ? 'opacity-0' : (showMask ? 'opacity-40' : 'opacity-0')
-            }`}
+            className={`absolute top-30 -right-2 w-64 h-64 object-contain pointer-events-none mix-blend-multiply invert dark:mix-blend-screen dark:invert-0 transition-opacity duration-1000 z-0 ${(messages.length > 0 || isDrawerOpen) ? 'opacity-0' : (showMask ? 'opacity-40' : 'opacity-0')
+              }`}
           />
 
           {/* Messages Area */}
@@ -424,14 +437,14 @@ export default function ChatWidget() {
                 {visitorData ? (
                   <div className="relative">
                     <TextType
-                      text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... This is the data you expose when you visit this website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Location:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**Screen Resolution:** ${visitorData.screen_resolution || "Unknown"}\n**GPU / Chip:** ${visitorData.gpu}\n**CPU Cores:** ${visitorData.cpu_cores || "Unknown"}\n**RAM:** ${visitorData.ram || "Unknown"}\n**Battery Level:** ${visitorData.battery_level || "Unknown"}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Timezone:** ${visitorData.timezone || "Unknown"}\n**Latitude:** ${visitorData.latitude}\n**Longitude:** ${visitorData.longitude}\n**Referrer URL:** ${visitorData.referrer_url || "Direct/None"}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit. We don't need your permission here.`}
+                      text={`# Hello! I'm Mr Robot.\n\n### By the way, before you ask anything... This is the data you expose when you visit this website:\n\n**IP Address:** ${visitorData.ipv4}\n**Static IP Address:** ${visitorData.ipv6 || "N/A"}\n**Network Hub:** ${visitorData.location}\n**Device Model:** ${visitorData.device_model}\n**Operating System:** ${visitorData.os}\n**Browser:** ${visitorData.browser}\n**Screen Resolution:** ${visitorData.screen_resolution || "Unknown"}\n**GPU / Chip:** ${visitorData.gpu}\n**CPU Cores:** ${visitorData.cpu_cores || "Unknown"}\n**RAM:** ${visitorData.ram || "Unknown"}\n**Battery Level:** ${visitorData.battery_level || "Unknown"}\n**Connection:** ${visitorData.connection_type !== 'UNKNOWN' ? visitorData.connection_type : 'N/A'}\n**Internet Provider:** ${visitorData.isp}\n**Timezone:** ${visitorData.timezone || "Unknown"}\n**Approx. Latitude:** ${visitorData.latitude}\n**Approx. Longitude:** ${visitorData.longitude}\n**Referrer URL:** ${visitorData.referrer_url || "Direct/None"}\n**Device Fingerprint:** ${visitorData.device_info}\n**You visit here at:** ${new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}\n\n###### Be careful what you visit. We don't need your permission here.`}
                       typingSpeed={40}
                       loop={false}
                       showCursor={true}
                       cursorCharacter="_"
                       asMarkdown={true}
                       variableSpeed={false}
-                      onSentenceComplete={() => {}}
+                      onSentenceComplete={() => { }}
                       onType={(index: number) => {
                         if (messagesEndRef.current) {
                           messagesEndRef.current.scrollIntoView({ behavior: "auto" });
