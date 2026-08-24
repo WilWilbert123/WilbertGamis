@@ -27,10 +27,24 @@ export default function ChatWidget() {
 
   const [messages, setMessages] = useState<any[]>([]);
   const [visitorData, setVisitorData] = useState<any>(null);
+  const [isGlobalChatOpen, setIsGlobalChatOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitted" | "streaming" | "error">("idle");
   const [showMask, setShowMask] = useState(false);
   const stopRef = useRef<boolean>(false);
   const trackingRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    // Listen for Global Chat widget state
+    const handleGlobalChatState = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setIsGlobalChatOpen(customEvent.detail);
+    };
+    window.addEventListener("global-chat-state", handleGlobalChatState);
+
+    return () => {
+      window.removeEventListener("global-chat-state", handleGlobalChatState);
+    };
+  }, []);
 
   useEffect(() => {
     const trackVisitor = async () => {
@@ -519,13 +533,14 @@ export default function ChatWidget() {
           )}
         </div>
       ) : (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="text-foreground hover:scale-110 transition-transform flex flex-col items-center justify-center p-2"
-        >
-          <img src="/mrrobot1png.png" alt="Mr. Robot" className="w-[200px] h-[200px] object-contain -mb-20 -mr-18 invert dark:invert-0" />
-
-        </button>
+        !isGlobalChatOpen && (
+          <button
+            onClick={() => setIsOpen(true)}
+            className="text-foreground hover:scale-110 transition-transform flex flex-col items-center justify-center p-2"
+          >
+            <img src="/mrrobot1png.png" alt="Mr. Robot" className="w-[200px] h-[200px] object-contain -mb-20 -mr-18 invert dark:invert-0" />
+          </button>
+        )
       )}
     </div>
   );

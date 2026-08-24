@@ -58,6 +58,11 @@ export default function GlobalChatWidget() {
   const channelRef = useRef<any>(null);
   const isTypingLocalRef = useRef<boolean>(false);
 
+  // Dispatch an event so Mr Robot chat widget knows when this is open and can hide itself
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("global-chat-state", { detail: isOpen }));
+  }, [isOpen]);
+
   // Sync with global Live View counter
   useEffect(() => {
     const handleSync = (e: Event) => {
