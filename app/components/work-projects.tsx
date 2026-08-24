@@ -5,6 +5,101 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { workProjects } from "../../data/work-projects";
 
+// Standalone Lightbox Component
+function ProjectLightbox({ images, title, isOpen, onClose }: { images: string[], title: string, isOpen: boolean, onClose: () => void }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) setCurrentIndex(0);
+  }, [isOpen]);
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-background/90 backdrop-blur-sm p-4 md:p-8"
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-7xl h-[80vh] md:h-[90vh] pixel-border bg-background p-1 shadow-2xl flex flex-col"
+          >
+            {/* Lightbox Inner Container */}
+            <div className="border-[2px] border-foreground bg-background relative flex flex-col h-full overflow-hidden">
+
+              {/* Header */}
+              <div className="flex justify-between items-center p-4 border-b-[2px] border-foreground">
+                <h3 className="font-['Press_Start_2P'] text-sm md:text-base lg:text-lg truncate pr-4">
+                  {title}
+                </h3>
+                <button
+                  onClick={onClose}
+                  className="p-2 pixel-border hover:bg-foreground hover:text-background transition-colors flex-shrink-0"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Main Image Area */}
+              <div className="relative flex-grow flex items-center justify-center p-2 md:p-6 overflow-hidden bg-foreground/5">
+                <img
+                  src={images[currentIndex]}
+                  alt={`${title} full screenshot ${currentIndex + 1}`}
+                  className="w-full h-full object-contain"
+                />
+
+                {/* Internal Controls */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrev}
+                      className="absolute left-2 md:left-6 w-12 h-12 pixel-border bg-background flex items-center justify-center hover:bg-foreground hover:text-background transition-colors z-10"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-2 md:right-6 w-12 h-12 pixel-border bg-background flex items-center justify-center hover:bg-foreground hover:text-background transition-colors z-10"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Footer with Counter */}
+              {images.length > 1 && (
+                <div className="p-3 border-t-[2px] border-foreground text-center font-['Silkscreen'] text-sm opacity-70">
+                  IMAGE {currentIndex + 1} OF {images.length}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // Carousel Component for individual projects
 function ProjectCarousel({ images, title }: { images: string[], title: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,7 +135,7 @@ function ProjectCarousel({ images, title }: { images: string[], title: string })
 
   return (
     <div className="relative w-full h-full p-2 bg-background group">
-      <div 
+      <div
         className="relative w-full h-full overflow-hidden cursor-pointer group/image"
         onClick={() => setIsLightboxOpen(true)}
       >
@@ -93,161 +188,207 @@ function ProjectCarousel({ images, title }: { images: string[], title: string })
       )}
 
       {/* Lightbox Modal */}
-      <AnimatePresence>
-        {isLightboxOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeLightbox}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-4 md:p-8"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-7xl h-[80vh] md:h-[90vh] pixel-border bg-background p-1 shadow-2xl flex flex-col"
-            >
-              {/* Lightbox Inner Container */}
-              <div className="border-[2px] border-foreground bg-background relative flex flex-col h-full overflow-hidden">
-                
-                {/* Header */}
-                <div className="flex justify-between items-center p-4 border-b-[2px] border-foreground">
-                  <h3 className="font-['Press_Start_2P'] text-sm md:text-base lg:text-lg truncate pr-4">
-                    {title}
-                  </h3>
-                  <button
-                    onClick={closeLightbox}
-                    className="p-2 pixel-border hover:bg-foreground hover:text-background transition-colors flex-shrink-0"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                {/* Main Image Area */}
-                <div className="relative flex-grow flex items-center justify-center p-2 md:p-6 overflow-hidden bg-foreground/5">
-                  <img
-                    src={images[currentIndex]}
-                    alt={`${title} full screenshot ${currentIndex + 1}`}
-                    className="w-full h-full object-contain"
-                  />
-                  
-                  {/* Internal Controls */}
-                  {images.length > 1 && (
-                    <>
-                      <button
-                        onClick={handlePrev}
-                        className="absolute left-2 md:left-6 w-12 h-12 pixel-border bg-background flex items-center justify-center hover:bg-foreground hover:text-background transition-colors z-10"
-                        aria-label="Previous image"
-                      >
-                        <ChevronLeft size={24} />
-                      </button>
-                      <button
-                        onClick={handleNext}
-                        className="absolute right-2 md:right-6 w-12 h-12 pixel-border bg-background flex items-center justify-center hover:bg-foreground hover:text-background transition-colors z-10"
-                        aria-label="Next image"
-                      >
-                        <ChevronRight size={24} />
-                      </button>
-                    </>
-                  )}
-                </div>
-                
-                {/* Footer with Counter */}
-                {images.length > 1 && (
-                  <div className="p-3 border-t-[2px] border-foreground text-center font-['Silkscreen'] text-sm opacity-70">
-                    IMAGE {currentIndex + 1} OF {images.length}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ProjectLightbox
+        images={images}
+        title={title}
+        isOpen={isLightboxOpen}
+        onClose={closeLightbox}
+      />
     </div>
   );
 }
 
 export default function WorkProjects() {
+  const [isAllWorkOpen, setIsAllWorkOpen] = useState(false);
+  const [lightboxProject, setLightboxProject] = useState<{ images: string[], title: string } | null>(null);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isAllWorkOpen || lightboxProject) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isAllWorkOpen, lightboxProject]);
+
   return (
-    <section className="py-24" id="work">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <section className="py-24" id="work">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-6">
-          <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl mb-12">
-            enterprise<br className="hidden sm:block" /> & client projects
-          </h2>
-          <a href="#" className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2">
-            view client work <ArrowRight size={16} />
-          </a>
-        </div>
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-6">
+            <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl mb-12">
+              enterprise<br className="hidden sm:block" /> & client projects
+            </h2>
+            <button
+              onClick={(e) => { e.preventDefault(); setIsAllWorkOpen(true); }}
+              className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 cursor-pointer transition-colors hover:text-foreground/80"
+            >
+              work projects <ArrowRight size={16} />
+            </button>
+          </div>
 
-        {/* Editorial Layout */}
-        <div className="flex flex-col gap-32">
-          {workProjects.map((project, idx) => {
-            const isEven = idx % 2 === 0;
+          {/* Editorial Layout */}
+          <div className="flex flex-col gap-32">
+            {workProjects.map((project, idx) => {
+              const isEven = idx % 2 === 0;
 
-            return (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-center"
-              >
-                {/* Carousel / Image Section */}
-                <div className={`relative w-full aspect-[4/3] pixel-border ${isEven ? 'md:order-2' : 'md:order-1'}`}>
-                  <ProjectCarousel images={project.images} title={project.title} />
-                </div>
-
-                {/* Text Section */}
-                <div className={`flex flex-col ${isEven ? 'md:order-1' : 'md:order-2'}`}>
-                  <h3 className="font-['Press_Start_2P'] text-xl sm:text-2xl lg:text-3xl leading-snug mb-4">
-                    {project.title}
-                  </h3>
-
-                  <p className="font-['Silkscreen'] text-sm sm:text-base mb-6 text-foreground/60 uppercase tracking-wider">
-                    {project.subtext}
-                  </p>
-
-                  <p className="font-mono text-base sm:text-lg mb-10 text-foreground/80 leading-relaxed max-w-xl">
-                    {project.description}
-                  </p>
-
-                  {/* Tech Stack Tags */}
-                  <div className="flex flex-wrap gap-3 mb-10">
-                    {project.tech.map((tech, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="font-mono text-xs sm:text-sm px-3 py-1.5 border-[2px] border-foreground/30 hover:border-foreground transition-colors bg-background cursor-default"
-                      >
-                        {tech}
-                      </span>
-                    ))}
+              return (
+                <motion.div
+                  key={idx}
+                  id={`work-project-${idx}`}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-center"
+                >
+                  {/* Carousel / Image Section */}
+                  <div className={`relative w-full aspect-[4/3] pixel-border ${isEven ? 'md:order-2' : 'md:order-1'}`}>
+                    <ProjectCarousel images={project.images} title={project.title} />
                   </div>
 
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group inline-flex items-center gap-4 font-['Silkscreen'] text-sm sm:text-base border-b-2 border-transparent hover:border-foreground pb-1 transition-colors w-max"
-                    >
-                      VIEW PROJECT
-                      <ArrowRight size={20} className="transform group-hover:-rotate-45 transition-transform" />
-                    </a>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                  {/* Text Section */}
+                  <div className={`flex flex-col ${isEven ? 'md:order-1' : 'md:order-2'}`}>
+                    <h3 className="font-['Press_Start_2P'] text-xl sm:text-2xl lg:text-3xl leading-snug mb-4">
+                      {project.title}
+                    </h3>
 
-      </div>
-    </section>
+                    <p className="font-['Silkscreen'] text-sm sm:text-base mb-6 text-foreground/60 uppercase tracking-wider">
+                      {project.subtext}
+                    </p>
+
+                    <p className="font-mono text-base sm:text-lg mb-10 text-foreground/80 leading-relaxed max-w-xl">
+                      {project.description}
+                    </p>
+
+                    {/* Tech Stack Tags */}
+                    <div className="flex flex-wrap gap-3 mb-10">
+                      {project.tech.map((tech, tIdx) => (
+                        <span
+                          key={tIdx}
+                          className="font-mono text-xs sm:text-sm px-3 py-1.5 border-[2px] border-foreground/30 hover:border-foreground transition-colors bg-background cursor-default"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    {project.link && (
+                      <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-4 font-['Silkscreen'] text-sm sm:text-base border-b-2 border-transparent hover:border-foreground pb-1 transition-colors w-max"
+                      >
+                        VIEW PROJECT
+                        <ArrowRight size={20} className="transform group-hover:-rotate-45 transition-transform" />
+                      </a>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* All Work Projects Modal */}
+      <AnimatePresence>
+        {isAllWorkOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsAllWorkOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md p-4 md:p-8 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-6xl pixel-border bg-background p-1 shadow-2xl h-[90vh] flex flex-col"
+            >
+              <div className="border-[2px] border-foreground p-6 md:p-8 bg-background relative flex flex-col h-full">
+
+                {/* Header */}
+                <div className="flex justify-between items-start mb-8 shrink-0">
+                  <h3 className="font-['Press_Start_2P'] text-xl md:text-3xl pr-12">ALL WORK PROJECT</h3>
+                  <button
+                    onClick={() => setIsAllWorkOpen(false)}
+                    className="absolute top-6 right-6 p-2 hover:bg-foreground hover:text-background transition-colors pixel-border"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                {/* Grid Container */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
+                    {workProjects.map((project, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1, duration: 0.4 }}
+                        className="pixel-border bg-background/50 p-4 flex flex-col h-full group hover:bg-foreground/5 transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (project.images && project.images.length > 0) {
+                            setLightboxProject({ images: project.images, title: project.title });
+                          }
+                        }}
+                      >
+                        {project.images && project.images.length > 0 ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <div className="w-full aspect-video mb-4 overflow-hidden pixel-border border-foreground/30 relative">
+                            <img
+                              src={project.images[0]}
+                              alt={project.title}
+                              className="w-full h-full object-cover grayscale-[0.8] group-hover:grayscale-0 transition-all duration-300"
+                            />
+                            <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-colors" />
+                          </div>
+                        ) : (
+                          <div className="w-full aspect-video mb-4 pixel-border border-foreground/30 bg-foreground/5 flex items-center justify-center font-['Silkscreen'] text-foreground/40">
+                            NO PREVIEW
+                          </div>
+                        )}
+                        <h4 className="font-['Press_Start_2P'] text-sm mb-2 group-hover:text-foreground/80 transition-colors">{project.title}</h4>
+                        <p className="font-mono text-xs text-foreground/60 line-clamp-3 mb-4 flex-1">
+                          {project.description}
+                        </p>
+                        {project.images && project.images.length > 0 ? (
+                          <div className="font-['Silkscreen'] text-xs text-foreground flex items-center gap-2 uppercase opacity-70 group-hover:opacity-100 mt-auto">
+                            VIEW GALLERY <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        ) : (
+                          <div className="font-['Silkscreen'] text-xs text-foreground flex items-center gap-2 uppercase opacity-70 group-hover:opacity-100 mt-auto">
+                            NO GALLERY <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Standalone Lightbox for Modal Grid Items */}
+      {lightboxProject && (
+        <ProjectLightbox
+          images={lightboxProject.images}
+          title={lightboxProject.title}
+          isOpen={true}
+          onClose={() => setLightboxProject(null)}
+        />
+      )}
+    </>
   );
 }
