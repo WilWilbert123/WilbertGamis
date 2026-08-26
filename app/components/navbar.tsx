@@ -2,14 +2,58 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, Cat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LiveViewCount from "./live-view-count";
+import { usePets, PetType, PET_SPRITES } from "./pet-system";
+
+function PetDropdownMenu({
+  setPetMenuOpen,
+  clearPets,
+  addPet
+}: {
+  setPetMenuOpen: (val: boolean) => void;
+  clearPets: () => void;
+  addPet: (type: PetType) => void;
+}) {
+  const allAvailablePets: PetType[] = [
+    "mouse", "chicken", "cat", "dog", "bird",
+    "fox", "totoro", "snake", "turtle"
+  ];
+
+  return (
+    <div className="absolute right-0 mt-2 w-[156px] bg-background border-2 border-foreground shadow-lg z-50 font-['Silkscreen'] text-sm">
+      <div className="p-2 border-b-2 border-foreground flex justify-between items-center">
+        <span>Pets</span>
+        <button onClick={clearPets} className="text-xs hover:underline">Clear</button>
+      </div>
+      <div className="py-2 px-2 flex flex-wrap gap-2 justify-start max-h-[60vh] overflow-y-auto">
+        {allAvailablePets.map(pet => (
+          <button
+            key={pet}
+            onClick={() => { addPet(pet); setPetMenuOpen(false); }}
+            className="w-10 h-10 flex justify-center items-center rounded hover:bg-foreground/10 border-2 border-transparent hover:border-foreground transition-colors"
+            title={pet}
+          >
+            <img
+              src={PET_SPRITES[pet].idle}
+              alt={pet}
+              className="w-8 h-8 object-contain"
+              style={{ imageRendering: 'pixelated' }}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Navbar() {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { addPet, addAllPets, clearPets } = usePets();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [petMenuOpen, setPetMenuOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -47,6 +91,23 @@ export default function Navbar() {
             <div className="order-1 md:absolute md:right-1 md:top-6 flex items-center">
               <LiveViewCount />
             </div>
+
+            {/* Pet Toggle Menu */}
+            {mounted && (
+              <div className="relative order-2">
+                <button
+                  onClick={() => setPetMenuOpen(!petMenuOpen)}
+                  className="p-2 pixel-border pixel-border-hover bg-background flex items-center justify-center"
+                  aria-label="Spawn Pet"
+                >
+                  <Cat size={18} />
+                </button>
+
+                {petMenuOpen && (
+                  <PetDropdownMenu setPetMenuOpen={setPetMenuOpen} clearPets={clearPets} addPet={addPet} />
+                )}
+              </div>
+            )}
 
             {/* Theme Toggle (Visible on both) */}
             {mounted && (

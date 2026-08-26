@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P, Silkscreen, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "./providers";
 import "./globals.css";
+import { PetProvider } from "./components/pet-system";
 
 const pressStart2P = Press_Start_2P({
   weight: "400",
@@ -44,9 +45,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <ChatWidget />
-          <GlobalChatWidget />
+          <PetProvider>
+            {children}
+            <ChatWidget />
+            <GlobalChatWidget />
+          </PetProvider>
         </ThemeProvider>
       </body>
     </html>
