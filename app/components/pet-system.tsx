@@ -91,18 +91,27 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("mousemove", handleMouseMove);
 
-    // For touch devices
+    // For touch devices (drags)
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         mousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         lastMouseTime.current = Date.now();
       }
     };
+    // For touch devices (taps)
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        mousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        lastMouseTime.current = Date.now();
+      }
+    };
     window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchstart", handleTouchStart);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchstart", handleTouchStart);
     };
   }, []);
 
@@ -344,7 +353,6 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
                 transform: `translate(${pet.x - 16}px, ${pet.y - 16}px) scaleX(${pet.flipX ? -1 : 1}) scale(${pet.type === 'bird' ? 0.8 : (pet.type === 'cat' && isMoving ? 0.85 : 1)})`,
                 width: '32px',
                 height: '32px',
-                transition: 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 zIndex: pet.isExcited ? 10000 : 9999,
               }}
             >
