@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Globe, X, Users, Type, Send, User, MessageCircle, MessageSquare } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
+import GlobalChatGame from "./global-chat-game";
 
 type Message = {
   id: string;
@@ -53,10 +54,19 @@ export default function GlobalChatWidget() {
   const [isLocating, setIsLocating] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [onlinePlayers, setOnlinePlayers] = useState<any[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
+  const channelReadyRef = useRef(false);
   const isTypingLocalRef = useRef<boolean>(false);
+  const sharedPresenceRef = useRef({
+    isTyping: false,
+    x: 1000, // MAP_WIDTH / 2
+    y: 1000, // MAP_HEIGHT / 2
+    flipX: false,
+    isWalking: false
+  });
 
   // Dispatch an event so Mr Robot chat widget knows when this is open and can hide itself
   useEffect(() => {
@@ -232,7 +242,11 @@ export default function GlobalChatWidget() {
   useEffect(() => {
     if (!sessionInfo.id || !isSetupComplete || !sessionInfo.username) return;
 
-    const presenceChannel = supabase.channel("global_presence");
+    const presenceChannel = supabase.channel("global_presence", {
+      config: {
+        broadcast: { ack: false, self: false }
+      }
+    });
     channelRef.current = presenceChannel;
 
     presenceChannel
@@ -243,6 +257,7 @@ export default function GlobalChatWidget() {
 
         Object.keys(state).forEach((key) => {
           state[key].forEach((presence: any) => {
+            totalOnline++;
             if (presence.isTyping && presence.username?.toLowerCase() !== sessionInfo.username?.toLowerCase()) {
               const lowerName = presence.username.toLowerCase();
               if (!currentTyping.includes(lowerName)) {
@@ -252,19 +267,29 @@ export default function GlobalChatWidget() {
           });
         });
 
+        const players = Object.values(state).flat() as any[];
+        setOnlinePlayers(players);
+
         setTypingUsers(currentTyping);
+      })
+      .on("broadcast", { event: "move" }, (payload) => {
+        window.dispatchEvent(new CustomEvent('player-move', { detail: payload.payload }));
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
+          channelReadyRef.current = true;
           await presenceChannel.track({
             user_id: sessionInfo.id,
             username: sessionInfo.username,
-            isTyping: false
+            ...sharedPresenceRef.current
           });
+        } else {
+          channelReadyRef.current = false;
         }
       });
 
     return () => {
+      channelReadyRef.current = false;
       supabase.removeChannel(presenceChannel);
     };
   }, [sessionInfo.id, isSetupComplete, sessionInfo.username]);
@@ -306,10 +331,11 @@ export default function GlobalChatWidget() {
       // Only send the WebSocket payload if the state ACTUALLY changed
       if (isCurrentlyTyping !== isTypingLocalRef.current) {
         isTypingLocalRef.current = isCurrentlyTyping;
+        sharedPresenceRef.current.isTyping = isCurrentlyTyping;
         await channelRef.current.track({
           user_id: sessionInfo.id,
           username: sessionInfo.username,
-          isTyping: isCurrentlyTyping
+          ...sharedPresenceRef.current
         });
       }
     }
@@ -324,10 +350,11 @@ export default function GlobalChatWidget() {
 
     if (channelRef.current) {
       isTypingLocalRef.current = false;
+      sharedPresenceRef.current.isTyping = false;
       channelRef.current.track({
         user_id: sessionInfo.id,
         username: sessionInfo.username,
-        isTyping: false
+        ...sharedPresenceRef.current
       });
     }
 
@@ -354,7 +381,7 @@ export default function GlobalChatWidget() {
       await channelRef.current.track({
         user_id: sessionInfo.id,
         username: sessionInfo.username,
-        isTyping: false
+        ...sharedPresenceRef.current
       });
     }
 
@@ -410,7 +437,7 @@ export default function GlobalChatWidget() {
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               exit={{ opacity: 0, y: 30, filter: "blur(10px)" }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="mb-4 w-[380px] h-[550px] bg-transparent flex flex-col"
+              className="mb-4 w-[95vw] md:w-[380px] h-[45vh] md:h-[550px] bg-transparent flex flex-col"
             >
               {/* Header (Minimalist) */}
               <div className="flex justify-between items-center text-foreground/80 p-2 font-mono text-xs">
@@ -596,6 +623,40 @@ export default function GlobalChatWidget() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Game Canvas */}
+      <AnimatePresence>
+        {isOpen && isSetupComplete && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 md:translate-x-0 md:top-auto md:left-auto md:bottom-4 md:right-4 z-40 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+              className="w-[95vw] md:w-[650px] h-[40vh] md:h-[650px] pointer-events-auto overflow-hidden bg-white rounded-[40px] md:rounded-[100px] shadow-[0_0_30px_10px_rgba(255,255,255,0.8)] dark:shadow-[0_0_30px_10px_rgba(0,0,0,0.8)] dark:bg-black border-none"
+            >
+              <div
+                className="w-full h-full"
+                style={{
+                  maskImage: "radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+                  WebkitMaskImage: "radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+                  maskComposite: "intersect",
+                  WebkitMaskComposite: "source-in"
+                }}
+              >
+                <GlobalChatGame 
+                  sessionInfo={sessionInfo} 
+                  channelRef={channelRef}
+                  channelReadyRef={channelReadyRef}
+                  sharedPresenceRef={sharedPresenceRef}
+                  onlinePlayers={onlinePlayers}
+                  messages={messages}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
