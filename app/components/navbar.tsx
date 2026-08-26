@@ -7,14 +7,14 @@ import { cn } from "@/lib/utils";
 import LiveViewCount from "./live-view-count";
 
 export default function Navbar() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   const navLinks = [
@@ -55,7 +55,7 @@ export default function Navbar() {
                 className="p-2 pixel-border pixel-border-hover bg-background order-2"
                 aria-label="Toggle Dark Mode"
               >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               </button>
             )}
 
