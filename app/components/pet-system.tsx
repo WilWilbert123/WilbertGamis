@@ -52,6 +52,7 @@ interface PetContextType {
   addPet: (type: PetType) => void;
   addAllPets: () => void;
   clearPets: () => void;
+  spawnBall: () => void;
 }
 
 const PetContext = createContext<PetContextType | undefined>(undefined);
@@ -66,10 +67,12 @@ export function usePets() {
 
 export function PetProvider({ children }: { children: React.ReactNode }) {
   const [pets, setPets] = useState<PetInstance[]>([]);
+  const [ballRender, setBallRender] = useState<{ x: number; y: number } | null>(null);
   const mousePos = useRef({ x: 0, y: 0 });
   const lastMouseTime = useRef<number>(Date.now());
   const animationRef = useRef<number>(0);
   const petsRef = useRef<PetInstance[]>([]);
+  const ballRef = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
 
   useEffect(() => {
     // Initial mouse position
@@ -117,15 +120,40 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const updatePets = () => {
-      if (petsRef.current.length === 0) {
+      if (petsRef.current.length === 0 && !ballRef.current) {
         animationRef.current = requestAnimationFrame(updatePets);
         return;
+      }
+
+      // Update ball physics
+      if (ballRef.current) {
+        let { x, y, vx, vy } = ballRef.current;
+        vy += 0.4; // gravity
+        y += vy;
+        x += vx;
+        vx *= 0.98; // friction
+
+        const groundY = window.innerHeight - 32;
+        if (y > groundY) {
+          y = groundY;
+          vy = -vy * 0.6; // bounce
+          if (Math.abs(vy) < 1) vy = 0;
+          vx *= 0.9; // friction on ground
+        }
+        
+        // Walls
+        if (x < 16) { x = 16; vx = -vx * 0.8; }
+        if (x > window.innerWidth - 16) { x = window.innerWidth - 16; vx = -vx * 0.8; }
+
+        ballRef.current = { x, y, vx, vy };
+        setBallRender({ x, y });
       }
 
       setPets((currentPets) => {
         const now = Date.now();
         const timeSinceMouseMoved = now - lastMouseTime.current;
         const isMouseMoving = timeSinceMouseMoved < 1000;
+        const hasBall = ballRef.current !== null;
 
         return currentPets.map((pet) => {
           const time = now / 1000;
@@ -135,7 +163,20 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
             let targetX = pet.targetX;
             let targetY = pet.targetY;
 
-            if (isMouseMoving) {
+            if (hasBall && ballRef.current) {
+              targetX = ballRef.current.x;
+              targetY = ballRef.current.y;
+              // Check interaction
+              const distToBallX = ballRef.current.x - pet.x;
+              const distToBallY = ballRef.current.y - pet.y;
+              const distToBall = Math.sqrt(distToBallX * distToBallX + distToBallY * distToBallY);
+              
+              if (distToBall < 30) {
+                // Push ball
+                ballRef.current.vx += Math.sign(distToBallX) * 3;
+                ballRef.current.vy -= 4;
+              }
+            } else if (isMouseMoving) {
               const distToMouseX = mousePos.current.x - pet.x;
               const distToMouseY = mousePos.current.y - pet.y;
               const distToMouse = Math.sqrt(distToMouseX * distToMouseX + distToMouseY * distToMouseY);
@@ -211,17 +252,36 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
 
             const speed = pet.isExcited ? pet.speed * 3 : pet.speed;
 
-            if (isMouseMoving) {
+            if (hasBall && ballRef.current) {
+              // Chase the ball
+              const idOffset = (parseInt(pet.id, 36) % 10) - 5;
+              targetX = ballRef.current.x + idOffset;
+              const dx = targetX - pet.x;
+              const distanceX = Math.abs(dx);
+              const dy = ballRef.current.y - pet.y;
+
+              if (distanceX < 30 && Math.abs(dy) < 40) {
+                // Push the ball
+                ballRef.current.vx += Math.sign(dx) * (2 + Math.random() * 2);
+                ballRef.current.vy -= (2 + Math.random() * 3);
+              }
+
+              const desiredVx = distanceX > 15 ? Math.sign(dx) * Math.min(speed * 1.5, distanceX) : 0;
+              vx = pet.vx + (desiredVx - pet.vx) * 0.2;
+              if (Math.abs(vx) > 0.1) flipX = vx < 0;
+
+              nextActionTime = now + 1000;
+            } else if (isMouseMoving) {
               // Chase mouse X
               const idOffset = (parseInt(pet.id, 36) % 100) - 50;
               targetX = mousePos.current.x + idOffset;
               const dx = targetX - pet.x;
               const distanceX = Math.abs(dx);
 
-              if (distanceX > 5) {
-                vx = Math.sign(dx) * Math.min(speed, distanceX);
-                flipX = vx < 0;
-              }
+              const desiredVx = distanceX > 15 ? Math.sign(dx) * Math.min(speed, distanceX) : 0;
+              vx = pet.vx + (desiredVx - pet.vx) * 0.2;
+              if (Math.abs(vx) > 0.1) flipX = vx < 0;
+
               // Reset action timer while chasing
               nextActionTime = now + 1000 + Math.random() * 2000;
             } else {
@@ -317,6 +377,19 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
 
   const clearPets = useCallback(() => {
     setPets([]);
+    ballRef.current = null;
+    setBallRender(null);
+  }, []);
+
+  const spawnBall = useCallback(() => {
+    // Spawn from the mouse position or center top
+    const startX = mousePos.current.x || window.innerWidth / 2;
+    ballRef.current = {
+      x: startX,
+      y: -50,
+      vx: (Math.random() - 0.5) * 10,
+      vy: 0
+    };
   }, []);
 
   const handlePetClick = (e: React.MouseEvent, id: string) => {
@@ -333,13 +406,26 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
     }, 1500);
   };
 
-  const contextValue = useMemo(() => ({ addPet, addAllPets, clearPets }), [addPet, addAllPets, clearPets]);
+  const contextValue = useMemo(() => ({ addPet, addAllPets, clearPets, spawnBall }), [addPet, addAllPets, clearPets, spawnBall]);
 
   return (
     <PetContext.Provider value={contextValue}>
       {children}
       {/* Render Pets Container */}
       <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+        {ballRender && (
+          <div
+            className="absolute pointer-events-none rounded-full bg-foreground shadow-md"
+            style={{
+              left: `${ballRender.x}px`,
+              top: `${ballRender.y}px`,
+              width: '12px',
+              height: '12px',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 9998
+            }}
+          />
+        )}
         {pets.map((pet) => {
           const isMoving = Math.abs(pet.vx) > 0.1 || Math.abs(pet.vy) > 0.1;
           const spriteUrl = isMoving ? PET_SPRITES[pet.type].walk : PET_SPRITES[pet.type].idle;
@@ -372,6 +458,7 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
                   {pet.bubbleText}
                 </div>
               )}
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1.5 bg-black/40 rounded-[100%] blur-[1px]" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={spriteUrl}
@@ -381,7 +468,9 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
                   width: '100%',
                   height: '100%',
                   imageRendering: 'pixelated',
-                  pointerEvents: 'none'
+                  pointerEvents: 'none',
+                  position: 'relative',
+                  zIndex: 1
                 }}
               />
             </div>

@@ -10,11 +10,13 @@ import { usePets, PetType, PET_SPRITES } from "./pet-system";
 function PetDropdownMenu({
   setPetMenuOpen,
   clearPets,
-  addPet
+  addPet,
+  spawnBall
 }: {
   setPetMenuOpen: (val: boolean) => void;
   clearPets: () => void;
   addPet: (type: PetType) => void;
+  spawnBall: () => void;
 }) {
   const allAvailablePets: PetType[] = [
     "mouse", "chicken", "cat", "dog", "bird",
@@ -23,8 +25,16 @@ function PetDropdownMenu({
 
   return (
     <div className="absolute right-0 mt-2 w-[156px] bg-background border-2 border-foreground shadow-lg z-50 font-['Silkscreen'] text-sm">
-      <div className="p-2 border-b-2 border-foreground flex justify-between items-center">
+      <div className="p-2 border-b-2 border-foreground flex justify-between items-center relative">
         <span>Pets</span>
+        <button 
+          onClick={() => { spawnBall(); setPetMenuOpen(false); }} 
+          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group cursor-pointer mt-1" 
+          title="Spawn Ball"
+        >
+          <div className="w-3 h-3 rounded-full bg-foreground group-hover:scale-125 transition-transform animate-bounce shadow-sm" />
+          <span className="text-[8px] font-bold opacity-0 group-hover:opacity-100 transition-opacity mt-1">BALL</span>
+        </button>
         <button onClick={clearPets} className="text-xs hover:underline">Clear</button>
       </div>
       <div className="py-2 px-2 flex flex-wrap gap-2 justify-start max-h-[60vh] overflow-y-auto">
@@ -50,7 +60,7 @@ function PetDropdownMenu({
 
 export default function Navbar() {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const { addPet, addAllPets, clearPets } = usePets();
+  const { addPet, addAllPets, clearPets, spawnBall } = usePets();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [petMenuOpen, setPetMenuOpen] = useState(false);
@@ -104,7 +114,7 @@ export default function Navbar() {
                 </button>
 
                 {petMenuOpen && (
-                  <PetDropdownMenu setPetMenuOpen={setPetMenuOpen} clearPets={clearPets} addPet={addPet} />
+                  <PetDropdownMenu setPetMenuOpen={setPetMenuOpen} clearPets={clearPets} addPet={addPet} spawnBall={spawnBall} />
                 )}
               </div>
             )}
