@@ -10,6 +10,7 @@ interface Player {
   y: number;
   flipX: boolean;
   isWalking: boolean;
+  mapId?: string;
 }
 
 const CAT_WALK = "/pets/cat/brown_walk_8fps.gif";
@@ -65,7 +66,7 @@ function PlayerSprite({ username, flipX, isWalking }: { username: string, flipX:
           src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`}
           alt={username}
           className="w-10 h-10 max-w-none absolute top-0 left-0 pixelated"
-          style={{ transform: `scaleX(${flipX ? -1 : 1})`, filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))' }}
+          style={{ transform: `scaleX(${flipX ? -1 : 1})` }}
         />
       </div>
 
@@ -125,15 +126,174 @@ function RemotePlayerSprite({ userId, username, initialFlipX, initialIsWalking }
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 2000;
 const MOVE_SPEED = 4;
-const UPDATE_INTERVAL_MS = 200; // 200ms = 5 updates per second to be extremely safe with Supabase limits
+const UPDATE_INTERVAL_MS = 100; // 100ms = 10 updates per second for smoother movement
+
+interface Portal {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  destMapId: string;
+  destX: number;
+  destY: number;
+}
+
+interface MapConfig {
+  backgroundImage: string;
+  width: number;
+  height: number;
+  portals: Portal[];
+}
+
+
+
+const MAPS: Record<string, MapConfig> = {
+  forest: {
+    backgroundImage: "/rpg_map_large.png", // Dynamically swapped for night time
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  rainy: {
+    backgroundImage: "/rpg_map_large_rainy.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "forest", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  desert: {
+    backgroundImage: "/rpg_map_large_dissert.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "forest", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  nolife: {
+    backgroundImage: "/rpg_map_large_nolife.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "forest", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  amazon: {
+    backgroundImage: "/rpg_map_large_amazon.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "forest", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  island: {
+    backgroundImage: "/rpg_map_large_island.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "forest", destX: 500, destY: 500 }
+    ]
+  },
+  tech: {
+    backgroundImage: "/rpg_map_large_future.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "forest", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  japan: {
+    backgroundImage: "/rpg_map_large_japan.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "philippines", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "forest", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  },
+  philippines: {
+    backgroundImage: "/rpg_map_large_philippines.jpeg",
+    width: 2000,
+    height: 2000,
+    portals: [
+      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
+      { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
+      { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
+      { id: "to_philippines", x: 250, y: 250, width: 60, height: 100, destMapId: "forest", destX: 1500, destY: 1500 },
+      { id: "to_nolife", x: 1690, y: 250, width: 60, height: 100, destMapId: "nolife", destX: 500, destY: 1500 },
+      { id: "to_japan", x: 250, y: 1650, width: 60, height: 100, destMapId: "japan", destX: 1500, destY: 500 },
+      { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
+    ]
+  }
+};
 
 export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRef, sharedPresenceRef, onlinePlayers, messages = [] }: GlobalChatGameProps) {
   // Local Player State
   const [isPlaying, setIsPlaying] = useState(false);
   const [localSpriteState, setLocalSpriteState] = useState({ flipX: false, isWalking: false });
+  const [currentMapId, setCurrentMapId] = useState("forest");
 
   // We use refs for local position to update instantly without React re-renders lagging the physics
-  const localPos = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, flipX: false, isWalking: false });
+  const localPos = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, flipX: false, isWalking: false, mapId: "forest" });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
 
   // Refs for direct DOM manipulation (Performance optimization for Safari)
@@ -142,7 +302,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
   const worldRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const idleTrackTimeout = useRef<NodeJS.Timeout | null>(null);
-  const latestPositions = useRef<Record<string, { x: number, y: number, flipX: boolean, isWalking: boolean }>>({});
+  const latestPositions = useRef<Record<string, { x: number, y: number, flipX: boolean, isWalking: boolean, mapId?: string }>>({});
 
   // Setup cats with persistent refs to avoid re-renders resetting their state
   const catsRef = useRef(Array.from({ length: 3 }).map((_, i) => ({
@@ -210,7 +370,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
   })));
 
   // Last broadcasted state
-  const lastBroadcast = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, time: 0, wasWalking: false, flipX: false });
+  const lastBroadcast = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, time: 0, wasWalking: false, flipX: false, mapId: "forest" });
 
   // Listen for broadcast events from other players
   useEffect(() => {
@@ -219,12 +379,12 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       if (data.user_id === sessionInfo.id) return;
 
       // Store the absolute latest position for when React re-renders
-      latestPositions.current[data.user_id] = { x: data.x, y: data.y, flipX: data.flipX, isWalking: data.isWalking };
+      latestPositions.current[data.user_id] = { x: data.x, y: data.y, flipX: data.flipX, isWalking: data.isWalking, mapId: data.mapId };
 
       const playerEl = document.getElementById(`player-${data.user_id}`);
       if (playerEl) {
-        playerEl.style.left = `${data.x}px`;
-        playerEl.style.top = `${data.y}px`;
+        playerEl.style.display = data.mapId === currentMapId ? 'flex' : 'none';
+        playerEl.style.transform = `translate3d(${data.x}px, ${data.y}px, 0) translate(-50%, -100%)`;
         playerEl.style.zIndex = Math.floor(data.y).toString();
       }
 
@@ -238,7 +398,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
     };
     window.addEventListener('player-move', handlePlayerMove);
     return () => window.removeEventListener('player-move', handlePlayerMove);
-  }, [sessionInfo.id]);
+  }, [sessionInfo.id, currentMapId]);
 
   // Game Loop
   useEffect(() => {
@@ -254,16 +414,27 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
     });
 
     let animationFrameId: number;
+    let lastTime = performance.now();
 
     const gameLoop = (time: number) => {
+      const deltaTime = time - lastTime;
+      lastTime = time;
+
+      // Cap deltaTime at 50ms to prevent huge jumps if tab is inactive
+      const dt = Math.min(deltaTime, 50);
+      
+      // Target speed was ~240 pixels per second (4 pixels at 60fps)
+      const moveSpeedPixelsPerMs = 0.24;
+      const currentMoveSpeed = moveSpeedPixelsPerMs * dt;
+
       let moved = false;
       let dx = 0;
       let dy = 0;
 
-      if (keysPressed.current['w'] || keysPressed.current['arrowup']) dy -= MOVE_SPEED;
-      if (keysPressed.current['s'] || keysPressed.current['arrowdown']) dy += MOVE_SPEED;
-      if (keysPressed.current['a'] || keysPressed.current['arrowleft']) dx -= MOVE_SPEED;
-      if (keysPressed.current['d'] || keysPressed.current['arrowright']) dx += MOVE_SPEED;
+      if (keysPressed.current['w'] || keysPressed.current['arrowup']) dy -= currentMoveSpeed;
+      if (keysPressed.current['s'] || keysPressed.current['arrowdown']) dy += currentMoveSpeed;
+      if (keysPressed.current['a'] || keysPressed.current['arrowleft']) dx -= currentMoveSpeed;
+      if (keysPressed.current['d'] || keysPressed.current['arrowright']) dx += currentMoveSpeed;
 
       if (dx !== 0 || dy !== 0) {
         moved = true;
@@ -271,8 +442,8 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         // Normalize diagonal movement
         if (dx !== 0 && dy !== 0) {
           const length = Math.sqrt(dx * dx + dy * dy);
-          dx = (dx / length) * MOVE_SPEED;
-          dy = (dy / length) * MOVE_SPEED;
+          dx = (dx / length) * currentMoveSpeed;
+          dy = (dy / length) * currentMoveSpeed;
         }
 
         localPos.current.x = Math.max(16, Math.min(MAP_WIDTH - 16, localPos.current.x + dx));
@@ -280,6 +451,44 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         if (dx < 0) localPos.current.flipX = true;
         if (dx > 0) localPos.current.flipX = false;
+      }
+
+      // Check for portal collisions
+      const currentMap = MAPS[localPos.current.mapId || "forest"];
+      if (currentMap && currentMap.portals) {
+        // approximate player hit box
+        const playerRect = { x: localPos.current.x - 20, y: localPos.current.y - 40, width: 40, height: 40 };
+        for (const portal of currentMap.portals) {
+          if (
+            playerRect.x < portal.x + portal.width &&
+            playerRect.x + playerRect.width > portal.x &&
+            playerRect.y < portal.y + portal.height &&
+            playerRect.y + playerRect.height > portal.y
+          ) {
+            // Teleport!
+            localPos.current.x = portal.destX;
+            localPos.current.y = portal.destY;
+            localPos.current.mapId = portal.destMapId;
+            setCurrentMapId(portal.destMapId);
+            
+            // Broadcast teleport so other clients move us immediately
+            if (channelReadyRef.current && channelRef.current) {
+              channelRef.current.send({
+                type: 'broadcast',
+                event: 'move',
+                payload: {
+                  user_id: sessionInfo.id,
+                  x: portal.destX,
+                  y: portal.destY,
+                  flipX: localPos.current.flipX,
+                  isWalking: false,
+                  mapId: portal.destMapId
+                }
+              });
+            }
+            break; // only trigger one portal
+          }
+        }
       }
 
       localPos.current.isWalking = moved;
@@ -318,8 +527,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
             const el = document.getElementById(cat.id);
             if (el) {
-              el.style.left = `${cat.x}px`;
-              el.style.top = `${cat.y}px`;
+              el.style.transform = `translate3d(${cat.x}px, ${cat.y}px, 0) translate(-50%, -100%)`;
               el.style.zIndex = Math.floor(cat.y).toString();
               
               const img = el.querySelector('img');
@@ -379,8 +587,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
           const el = document.getElementById(fox.id);
           if (el) {
-            el.style.left = `${fox.x}px`;
-            el.style.top = `${fox.y}px`;
+            el.style.transform = `translate3d(${fox.x}px, ${fox.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(fox.y).toString();
             
             const img = el.querySelector('img');
@@ -440,8 +647,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
           const el = document.getElementById(dog.id);
           if (el) {
-            el.style.left = `${dog.x}px`;
-            el.style.top = `${dog.y}px`;
+            el.style.transform = `translate3d(${dog.x}px, ${dog.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(dog.y).toString();
             
             const img = el.querySelector('img');
@@ -501,8 +707,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
           const el = document.getElementById(mouse.id);
           if (el) {
-            el.style.left = `${mouse.x}px`;
-            el.style.top = `${mouse.y}px`;
+            el.style.transform = `translate3d(${mouse.x}px, ${mouse.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(mouse.y).toString();
             
             const img = el.querySelector('img');
@@ -562,8 +767,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
           const el = document.getElementById(chicken.id);
           if (el) {
-            el.style.left = `${chicken.x}px`;
-            el.style.top = `${chicken.y}px`;
+            el.style.transform = `translate3d(${chicken.x}px, ${chicken.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(chicken.y).toString();
             
             const img = el.querySelector('img');
@@ -592,10 +796,8 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
       // Direct DOM manipulation to avoid React re-render lag in Safari
       if (playerRef.current) {
-        playerRef.current.style.left = `${localPos.current.x}px`;
-        playerRef.current.style.top = `${localPos.current.y}px`;
         playerRef.current.style.zIndex = Math.floor(localPos.current.y).toString();
-        playerRef.current.style.transform = `translate(-50%, -100%)`;
+        playerRef.current.style.transform = `translate3d(${localPos.current.x}px, ${localPos.current.y}px, 0) translate(-50%, -100%)`;
       }
 
       if (minimapPlayerRef.current) {
@@ -625,7 +827,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         camX = Math.max(0, Math.min(MAP_WIDTH - viewportWidth, camX));
         camY = Math.max(0, Math.min(MAP_HEIGHT - viewportHeight, camY));
 
-        worldRef.current.style.transform = `translate(${-camX}px, ${-camY}px)`;
+        worldRef.current.style.transform = `translate3d(${-camX}px, ${-camY}px, 0)`;
       }
 
       // Broadcast to network
@@ -646,7 +848,8 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 x: localPos.current.x,
                 y: localPos.current.y,
                 flipX: localPos.current.flipX,
-                isWalking: true
+                isWalking: true,
+                mapId: localPos.current.mapId
               }
             });
           }
@@ -665,7 +868,8 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 x: localPos.current.x,
                 y: localPos.current.y,
                 flipX: localPos.current.flipX,
-                isWalking: false
+                isWalking: false,
+                mapId: localPos.current.mapId
               }
             });
           }
@@ -679,6 +883,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             sharedPresenceRef.current.y = localPos.current.y;
             sharedPresenceRef.current.flipX = localPos.current.flipX;
             sharedPresenceRef.current.isWalking = false;
+            sharedPresenceRef.current.mapId = localPos.current.mapId;
 
             channelRef.current?.track({
               user_id: sessionInfo.id,
@@ -762,7 +967,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
     );
   }
 
-  // Filter out ourselves from the online players list
+  // Do not filter by mapId here. We will use display:none in the JSX so that broadcast teleports are instant.
   const otherPlayers = onlinePlayers.filter(p => p.user_id !== sessionInfo.id && p.x !== undefined && p.y !== undefined);
 
   // Helper to get active chat message for a user
@@ -782,13 +987,20 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
     return null;
   };
 
+  const currentHour = new Date().getHours();
+  const isNight = currentHour >= 17 || currentHour < 6;
+  let activeBg = MAPS[currentMapId]?.backgroundImage || "/rpg_map_large.png";
+  if (currentMapId === "forest") {
+    activeBg = isNight ? "/rpg_map_large_night.jpeg" : "/rpg_map_large.png";
+  }
+
   return (
     <div ref={containerRef} className="w-full h-full relative bg-white dark:bg-black overflow-hidden select-none">
       {/* World Container (Moves with Camera) */}
       <div
         ref={worldRef}
         className="absolute inset-0 transition-transform duration-0 ease-linear"
-        style={{ transform: `translate(0px, 0px)` }}
+        style={{ transform: `translate3d(0px, 0px, 0px)`, willChange: 'transform' }}
       >
         {/* RPG Town Map Background */}
         <div
@@ -796,12 +1008,56 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           style={{
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
-            backgroundImage: 'url(/rpg_map_large.png)',
+            backgroundImage: `url(${activeBg})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             imageRendering: 'pixelated'
           }}
         />
+
+        {/* Portals */}
+        {MAPS[currentMapId]?.portals.map(portal => (
+          <div
+            key={portal.id}
+            className="absolute flex items-center justify-center pointer-events-none"
+            style={{
+              left: `${portal.x}px`,
+              top: `${portal.y}px`,
+              width: `${portal.width}px`,
+              height: `${portal.height}px`,
+            }}
+          >
+            {/* Outer Dark Green Blocky Ring */}
+            <div className="absolute w-full h-full bg-[#166534]" style={{ clipPath: 'polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%)' }} />
+            
+            {/* Spinning Blocky Cross / Swirl */}
+            <div className="absolute w-[80%] h-[80%] animate-[spin_0.8s_steps(4)_infinite]">
+              <div className="absolute top-0 left-[20%] w-[60%] h-[20%] bg-[#22c55e]" />
+              <div className="absolute bottom-0 left-[20%] w-[60%] h-[20%] bg-[#22c55e]" />
+              <div className="absolute left-0 top-[20%] w-[20%] h-[60%] bg-[#22c55e]" />
+              <div className="absolute right-0 top-[20%] w-[20%] h-[60%] bg-[#22c55e]" />
+            </div>
+
+            {/* Inner Bright Swirl */}
+            <div className="absolute w-[60%] h-[60%] animate-[spin_0.6s_steps(4)_infinite_reverse]">
+              <div className="absolute top-0 left-[20%] w-[60%] h-[20%] bg-[#39ff14]" />
+              <div className="absolute bottom-0 left-[20%] w-[60%] h-[20%] bg-[#39ff14]" />
+              <div className="absolute left-0 top-[20%] w-[20%] h-[60%] bg-[#39ff14]" />
+              <div className="absolute right-0 top-[20%] w-[20%] h-[60%] bg-[#39ff14]" />
+            </div>
+            
+            {/* Core */}
+            <div className="absolute w-[30%] h-[30%] bg-[#ccff00] animate-pulse" style={{ clipPath: 'polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%)' }} />
+
+            {/* Floating Pixels */}
+            <div className="absolute w-[15%] h-[15%] bg-white animate-[bounce_1s_steps(2)_infinite] top-[10%] left-[10%]" />
+            <div className="absolute w-[15%] h-[15%] bg-[#39ff14] animate-[bounce_1.2s_steps(2)_infinite] bottom-[10%] right-[10%]" />
+
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] uppercase text-white font-bold pointer-events-none z-10" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: "2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000" }}>
+              To {portal.destMapId}
+            </div>
+          </div>
+        ))}
 
         {/* Semi-transparent overlay to make characters stand out */}
         <div className="absolute inset-0 bg-black/10 pointer-events-none" style={{ width: MAP_WIDTH, height: MAP_HEIGHT }} />
@@ -813,10 +1069,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             key={cat.id}
             className="absolute flex flex-col items-center pointer-events-none"
             style={{
-              left: `${cat.x}px`,
-              top: `${cat.y}px`,
-              zIndex: Math.floor(cat.y),
-              transform: 'translate(-50%, -100%)'
+              left: 0, top: 0, zIndex: Math.floor(cat.y), transform: `translate3d(${cat.x}px, ${cat.y}px, 0) translate(-50%, -100%)`
             }}
           >
             <img 
@@ -828,7 +1081,6 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 maxWidth: 'none',
                 imageRendering: 'pixelated',
                 transform: `scale(${cat.flipX ? -1 : 1}, 1)`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
                 transition: 'none'
               }}
             />
@@ -842,10 +1094,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             key={fox.id}
             className="absolute flex flex-col items-center pointer-events-none"
             style={{
-              left: `${fox.x}px`,
-              top: `${fox.y}px`,
-              zIndex: Math.floor(fox.y),
-              transform: 'translate(-50%, -100%)'
+              left: 0, top: 0, zIndex: Math.floor(fox.y), transform: `translate3d(${fox.x}px, ${fox.y}px, 0) translate(-50%, -100%)`
             }}
           >
             <img 
@@ -857,7 +1106,6 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 maxWidth: 'none',
                 imageRendering: 'pixelated',
                 transform: `scale(${fox.flipX ? -1 : 1}, 1)`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
                 transition: 'none'
               }}
             />
@@ -871,10 +1119,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             key={dog.id}
             className="absolute flex flex-col items-center pointer-events-none"
             style={{
-              left: `${dog.x}px`,
-              top: `${dog.y}px`,
-              zIndex: Math.floor(dog.y),
-              transform: 'translate(-50%, -100%)'
+              left: 0, top: 0, zIndex: Math.floor(dog.y), transform: `translate3d(${dog.x}px, ${dog.y}px, 0) translate(-50%, -100%)`
             }}
           >
             <img 
@@ -886,7 +1131,6 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 maxWidth: 'none',
                 imageRendering: 'pixelated',
                 transform: `scale(${dog.flipX ? -1 : 1}, 1)`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
                 transition: 'none'
               }}
             />
@@ -900,10 +1144,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             key={mouse.id}
             className="absolute flex flex-col items-center pointer-events-none"
             style={{
-              left: `${mouse.x}px`,
-              top: `${mouse.y}px`,
-              zIndex: Math.floor(mouse.y),
-              transform: 'translate(-50%, -100%)'
+              left: 0, top: 0, zIndex: Math.floor(mouse.y), transform: `translate3d(${mouse.x}px, ${mouse.y}px, 0) translate(-50%, -100%)`
             }}
           >
             <img 
@@ -915,7 +1156,6 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 maxWidth: 'none',
                 imageRendering: 'pixelated',
                 transform: `scale(${mouse.flipX ? -1 : 1}, 1)`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
                 transition: 'none'
               }}
             />
@@ -929,10 +1169,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             key={chicken.id}
             className="absolute flex flex-col items-center pointer-events-none"
             style={{
-              left: `${chicken.x}px`,
-              top: `${chicken.y}px`,
-              zIndex: Math.floor(chicken.y),
-              transform: 'translate(-50%, -100%)'
+              left: 0, top: 0, zIndex: Math.floor(chicken.y), transform: `translate3d(${chicken.x}px, ${chicken.y}px, 0) translate(-50%, -100%)`
             }}
           >
             <img 
@@ -944,7 +1181,6 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 maxWidth: 'none',
                 imageRendering: 'pixelated',
                 transform: `scale(${chicken.flipX ? -1 : 1}, 1)`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
                 transition: 'none'
               }}
             />
@@ -958,15 +1194,19 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const currentY = latestPositions.current[player.user_id]?.y ?? player.y;
           const currentFlipX = latestPositions.current[player.user_id]?.flipX ?? player.flipX;
 
+          const currentMapIdForRemote = latestPositions.current[player.user_id]?.mapId ?? player.mapId ?? "forest";
+
           return (
             <div
               id={`player-${player.user_id}`}
               key={player.user_id}
-              className="absolute flex flex-col items-center z-10 pointer-events-none transition-all duration-200 ease-linear"
+              className="absolute flex flex-col items-center z-10 pointer-events-none transition-transform duration-[100ms] ease-linear"
               style={{
-                left: `${currentX}px`,
-                top: `${currentY}px`,
-                transform: 'translate(-50%, -100%)'
+                display: currentMapIdForRemote === currentMapId ? 'flex' : 'none',
+                left: 0,
+                top: 0,
+                transform: `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -100%)`,
+                willChange: 'transform'
               }}
             >
               {latestMsg && (
@@ -988,9 +1228,10 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           ref={playerRef}
           className="absolute flex flex-col items-center z-20"
           style={{
-            left: localPos.current.x,
-            top: localPos.current.y,
-            transform: `translate(-50%, -100%)`
+            left: 0,
+            top: 0,
+            transform: `translate3d(${localPos.current.x}px, ${localPos.current.y}px, 0) translate(-50%, -100%)`,
+            willChange: 'transform'
           }}
         >
           {getLatestMessage(sessionInfo.id) && (

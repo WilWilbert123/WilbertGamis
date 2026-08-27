@@ -65,7 +65,8 @@ export default function GlobalChatWidget() {
     x: 1000, // MAP_WIDTH / 2
     y: 1000, // MAP_HEIGHT / 2
     flipX: false,
-    isWalking: false
+    isWalking: false,
+    mapId: "forest"
   });
 
   // Dispatch an event so Mr Robot chat widget knows when this is open and can hide itself
