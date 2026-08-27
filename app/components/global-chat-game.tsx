@@ -150,7 +150,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
   })));
 
   // Last broadcasted state
-  const lastBroadcast = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, time: 0, wasWalking: false });
+  const lastBroadcast = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, time: 0, wasWalking: false, flipX: false });
 
   // Listen for broadcast events from other players
   useEffect(() => {
