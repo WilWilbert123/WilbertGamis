@@ -24,6 +24,95 @@ interface GlobalChatGameProps {
   messages?: any[];
 }
 
+const getPlayerColor = (username: string) => {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue}, 70%, 50%)`;
+};
+
+function PlayerSprite({ username, flipX, isWalking }: { username: string, flipX: boolean, isWalking: boolean }) {
+  const shirtColor = getPlayerColor(username);
+
+  return (
+    <div className="relative flex flex-col items-center select-none">
+      <style>{`
+        @keyframes walk-up {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes walk-down {
+          0%, 100% { transform: translateY(-4px); }
+          50% { transform: translateY(0px); }
+        }
+        .anim-walk-1 { animation: walk-up 0.4s infinite; }
+        .anim-walk-2 { animation: walk-down 0.4s infinite; }
+      `}</style>
+
+      {/* Head */}
+      <div className={`w-10 h-[26px] overflow-hidden relative z-10 ${isWalking ? 'animate-bounce' : ''}`} style={{ animationDuration: '0.4s' }}>
+        <img
+          src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`}
+          alt={username}
+          className="w-10 h-10 max-w-none absolute top-0 left-0 pixelated"
+          style={{ transform: `scaleX(${flipX ? -1 : 1})`, filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))' }}
+        />
+      </div>
+
+      {/* Body Container */}
+      <div className={`relative w-[24px] h-[16px] flex justify-center -mt-[2px] z-0`} style={{ transform: `scaleX(${flipX ? -1 : 1})` }}>
+        
+        {/* Left Arm */}
+        <div className={`absolute top-[2px] -left-[2px] w-[6px] h-[10px] z-10 ${isWalking ? 'anim-walk-1' : ''}`}>
+          <div className="w-full h-[8px]" style={{ backgroundColor: shirtColor }} />
+          <div className="w-full h-[4px] bg-[#fcd34d]" />
+        </div>
+
+        {/* Right Arm */}
+        <div className={`absolute top-[2px] -right-[2px] w-[6px] h-[10px] z-10 ${isWalking ? 'anim-walk-2' : ''}`}>
+          <div className="w-full h-[8px]" style={{ backgroundColor: shirtColor }} />
+          <div className="w-full h-[4px] bg-[#fcd34d]" />
+        </div>
+
+        {/* Torso */}
+        <div className="w-[16px] h-[12px] z-0 shadow-[inset_0_-2px_0_rgba(0,0,0,0.2)]" style={{ backgroundColor: shirtColor }} />
+
+        {/* Left Leg */}
+        <div className={`absolute top-[10px] left-[4px] w-[6px] h-[12px] bg-[#1e3a8a] z-0 ${isWalking ? 'anim-walk-2' : ''}`}>
+          <div className="absolute bottom-0 -left-[1px] w-[8px] h-[4px] bg-[#451a03]" />
+        </div>
+
+        {/* Right Leg */}
+        <div className={`absolute top-[10px] right-[4px] w-[6px] h-[12px] bg-[#1e3a8a] z-0 ${isWalking ? 'anim-walk-1' : ''}`}>
+          <div className="absolute bottom-0 -left-[1px] w-[8px] h-[4px] bg-[#451a03]" />
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+function RemotePlayerSprite({ userId, username, initialFlipX, initialIsWalking }: { userId: string, username: string, initialFlipX: boolean, initialIsWalking: boolean }) {
+  const [spriteState, setSpriteState] = useState({ flipX: initialFlipX, isWalking: initialIsWalking });
+
+  useEffect(() => {
+    const handleUpdate = (e: CustomEvent) => {
+      setSpriteState(prev => {
+        if (prev.flipX !== e.detail.flipX || prev.isWalking !== e.detail.isWalking) {
+          return { flipX: e.detail.flipX, isWalking: e.detail.isWalking };
+        }
+        return prev;
+      });
+    };
+    window.addEventListener(`sprite-update-${userId}` as any, handleUpdate as any);
+    return () => window.removeEventListener(`sprite-update-${userId}` as any, handleUpdate as any);
+  }, [userId]);
+
+  return <PlayerSprite username={username} flipX={spriteState.flipX} isWalking={spriteState.isWalking} />;
+};
+
 // Game Map Constants
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 2000;
@@ -33,6 +122,7 @@ const UPDATE_INTERVAL_MS = 200; // 200ms = 5 updates per second to be extremely 
 export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRef, sharedPresenceRef, onlinePlayers, messages = [] }: GlobalChatGameProps) {
   // Local Player State
   const [isPlaying, setIsPlaying] = useState(false);
+  const [localSpriteState, setLocalSpriteState] = useState({ flipX: false, isWalking: false });
 
   // We use refs for local position to update instantly without React re-renders lagging the physics
   const localPos = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, flipX: false, isWalking: false });
@@ -75,21 +165,23 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       if (playerEl) {
         playerEl.style.left = `${data.x}px`;
         playerEl.style.top = `${data.y}px`;
-        const img = playerEl.querySelector('img');
-        if (img) {
-          img.style.transform = `scaleX(${data.flipX ? -1 : 1})`;
-        }
-        
-        if (data.isWalking && !playerEl.classList.contains('is-walking')) {
-          playerEl.classList.add('is-walking');
-          const avatar = playerEl.querySelector('.avatar-container');
-          if (avatar) avatar.classList.add('animate-bounce');
-        } else if (!data.isWalking && playerEl.classList.contains('is-walking')) {
-          playerEl.classList.remove('is-walking');
-          const avatar = playerEl.querySelector('.avatar-container');
-          if (avatar) avatar.classList.remove('animate-bounce');
-        }
+        const img = playerEl.querySelector('.animate-bounce');
+        // Animation handling is now fully managed by React state for remote players through latestPositions!
+        // We just need to trigger a small re-render for animation state changes if needed.
+        // Actually, since React handles remote players, we shouldn't manually manipulate their classes anymore
+        // because PlayerSprite encapsulates 5 different animated parts.
+        // The most performant way for remote players is to let React re-render when they start/stop walking.
+        // But since we want to avoid full tree re-renders, we'll let the DOM manipulation handle X/Y,
+        // and only trigger React state for flipX/isWalking if they changed.
       }
+      
+      // We will dispatch a custom event that individual PlayerSprites could listen to, 
+      // but to keep it simple, we let the parent map handle it if we want.
+      // Wait, we don't need to do anything else here for remote players. 
+      // When their broadcast is received, if their flipX or isWalking changed, React will re-render anyway
+      // because we update onlinePlayers? No, broadcast doesn't update onlinePlayers.
+      // Let's just dispatch an event to the specific player sprite!
+      window.dispatchEvent(new CustomEvent(`sprite-update-${data.user_id}`, { detail: { flipX: data.flipX, isWalking: data.isWalking } }));
     };
     window.addEventListener('player-move', handlePlayerMove);
     return () => window.removeEventListener('player-move', handlePlayerMove);
@@ -192,22 +284,16 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         playerRef.current.style.transform = `translate(-50%, -100%)`;
       }
 
-      if (playerImgRef.current) {
-        playerImgRef.current.style.transform = `scaleX(${localPos.current.flipX ? -1 : 1})`;
+      if (moved !== localPos.current.isWalking || localPos.current.flipX !== lastBroadcast.current.flipX) {
+        setLocalSpriteState(prev => {
+          if (prev.isWalking !== moved || prev.flipX !== localPos.current.flipX) {
+            return { flipX: localPos.current.flipX, isWalking: moved };
+          }
+          return prev;
+        });
       }
       
-      const containerEl = playerRef.current;
-      if (containerEl) {
-        if (moved && !containerEl.classList.contains('is-walking')) {
-          containerEl.classList.add('is-walking');
-          const avatar = containerEl.querySelector('.avatar-container');
-          if (avatar) avatar.classList.add('animate-bounce');
-        } else if (!moved && containerEl.classList.contains('is-walking')) {
-          containerEl.classList.remove('is-walking');
-          const avatar = containerEl.querySelector('.avatar-container');
-          if (avatar) avatar.classList.remove('animate-bounce');
-        }
-      }
+      localPos.current.isWalking = moved;
 
       if (worldRef.current && containerRef.current) {
         // Calculate viewport size dynamically for responsiveness
@@ -379,23 +465,6 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-white dark:bg-black overflow-hidden select-none">
-      <style>{`
-        @keyframes walk-left {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
-        }
-        @keyframes walk-right {
-          0%, 100% { transform: translateY(-3px); }
-          50% { transform: translateY(0); }
-        }
-        .is-walking .player-leg-l, .is-walking .player-arm-r {
-          animation: walk-left 0.4s infinite;
-        }
-        .is-walking .player-leg-r, .is-walking .player-arm-l {
-          animation: walk-right 0.4s infinite;
-        }
-      `}</style>
-      
       {/* World Container (Moves with Camera) */}
       <div
         ref={worldRef}
@@ -449,13 +518,11 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const currentY = latestPositions.current[player.user_id]?.y ?? player.y;
           const currentFlipX = latestPositions.current[player.user_id]?.flipX ?? player.flipX;
 
-          const currentIsWalking = latestPositions.current[player.user_id]?.isWalking ?? player.isWalking;
-
           return (
             <div
               id={`player-${player.user_id}`}
               key={player.user_id}
-              className={`absolute flex flex-col items-center z-10 pointer-events-none transition-all duration-200 ease-linear player-container ${currentIsWalking ? 'is-walking' : ''}`}
+              className="absolute flex flex-col items-center z-10 pointer-events-none transition-all duration-200 ease-linear"
               style={{
                 left: `${currentX}px`,
                 top: `${currentY}px`,
@@ -471,36 +538,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               <span className="text-[10px] font-mono text-white/90 bg-black/50 px-1.5 py-0.5 rounded shadow-sm mb-1 whitespace-nowrap">
                 {player.username}
               </span>
-              
-              {/* Avatar Container */}
-              <div className={`relative flex flex-col items-center avatar-container ${currentIsWalking ? 'animate-bounce' : ''}`} style={{ animationDuration: '0.4s' }}>
-                {/* Left Arm */}
-                <div className="player-arm-l absolute top-6 -left-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
-                {/* Right Arm */}
-                <div className="player-arm-r absolute top-6 -right-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
-                
-                <img
-                  src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${player.username}`}
-                  alt={player.username}
-                  className="w-10 h-10 pixelated relative z-10"
-                  style={{
-                    transform: `scaleX(${currentFlipX ? -1 : 1})`,
-                    filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
-                  }}
-                />
-                
-                {/* Legs */}
-                <div className="flex gap-1.5 -mt-1.5 z-0 relative">
-                  <div className="player-leg-l w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
-                    <div className="flex-1" />
-                    <div className="h-1.5 bg-amber-900" />
-                  </div>
-                  <div className="player-leg-r w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
-                    <div className="flex-1" />
-                    <div className="h-1.5 bg-amber-900" />
-                  </div>
-                </div>
-              </div>
+              <RemotePlayerSprite userId={player.user_id} username={player.username} initialFlipX={currentFlipX} initialIsWalking={player.isWalking} />
             </div>
           );
         })}
@@ -508,7 +546,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         {/* Local Player */}
         <div
           ref={playerRef}
-          className="absolute flex flex-col items-center z-20 player-container"
+          className="absolute flex flex-col items-center z-20"
           style={{
             left: localPos.current.x,
             top: localPos.current.y,
@@ -524,37 +562,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           <span className="text-[10px] font-mono text-green-300 bg-black/60 px-1.5 py-0.5 rounded shadow-sm mb-1 whitespace-nowrap">
             {sessionInfo.username}
           </span>
-          
-          {/* Avatar Container */}
-          <div className="relative flex flex-col items-center avatar-container" style={{ animationDuration: '0.4s' }}>
-            {/* Left Arm */}
-            <div className="player-arm-l absolute top-6 -left-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
-            {/* Right Arm */}
-            <div className="player-arm-r absolute top-6 -right-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
-            
-            <img
-              ref={playerImgRef}
-              src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${sessionInfo.username}`}
-              alt={sessionInfo.username}
-              className={`w-10 h-10 pixelated relative z-10 transition-transform`}
-              style={{
-                transform: `scaleX(${localPos.current.flipX ? -1 : 1})`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
-              }}
-            />
-            
-            {/* Legs */}
-            <div className="flex gap-1.5 -mt-1.5 z-0 relative">
-              <div className="player-leg-l w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
-                 <div className="flex-1" />
-                 <div className="h-1.5 bg-amber-900" />
-              </div>
-              <div className="player-leg-r w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
-                 <div className="flex-1" />
-                 <div className="h-1.5 bg-amber-900" />
-              </div>
-            </div>
-          </div>
+          <PlayerSprite username={sessionInfo.username} flipX={localSpriteState.flipX} isWalking={localSpriteState.isWalking} />
         </div>
       </div>
 
