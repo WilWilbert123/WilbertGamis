@@ -12,8 +12,16 @@ interface Player {
   isWalking: boolean;
 }
 
-const CHICKEN_WALK = "https://raw.githubusercontent.com/tonybaloney/vscode-pets/main/media/chicken/white_walk_8fps.gif";
-const CHICKEN_IDLE = "https://raw.githubusercontent.com/tonybaloney/vscode-pets/main/media/chicken/white_idle_8fps.gif";
+const CAT_WALK = "/pets/cat/brown_walk_8fps.gif";
+const CAT_IDLE = "/pets/cat/brown_idle_8fps.gif";
+const FOX_WALK = "/pets/fox/red_walk_8fps.gif";
+const FOX_IDLE = "/pets/fox/red_idle_8fps.gif";
+const DOG_WALK = "/pets/dog/black_walk_8fps.gif";
+const DOG_IDLE = "/pets/dog/black_idle_8fps.gif";
+const MOUSE_WALK = "/pets/mouse/brown_walk_8fps.gif";
+const MOUSE_IDLE = "/pets/mouse/brown_idle_8fps.gif";
+const CHICKEN_WALK = "/pets/chicken/white_walk_8fps.gif";
+const CHICKEN_IDLE = "/pets/chicken/white_idle_8fps.gif";
 
 interface GlobalChatGameProps {
   sessionInfo: { id: string; username: string };
@@ -136,17 +144,69 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
   const idleTrackTimeout = useRef<NodeJS.Timeout | null>(null);
   const latestPositions = useRef<Record<string, { x: number, y: number, flipX: boolean, isWalking: boolean }>>({});
 
-  // Local Chickens (NPCs)
-  const chickensRef = useRef(Array.from({ length: 5 }).map((_, i) => ({
-    id: `chicken-${i}`,
-    x: Math.random() * MAP_WIDTH,
-    y: Math.random() * MAP_HEIGHT,
-    targetX: Math.random() * MAP_WIDTH,
-    targetY: Math.random() * MAP_HEIGHT,
+  // Setup cats with persistent refs to avoid re-renders resetting their state
+  const catsRef = useRef(Array.from({ length: 3 }).map((_, i) => ({
+    id: `cat-center-${i}`,
+    x: (MAP_WIDTH / 2) + (Math.random() - 0.5) * 300,
+    y: (MAP_HEIGHT / 2) + (Math.random() - 0.5) * 300,
+    targetX: (MAP_WIDTH / 2) + (Math.random() - 0.5) * 300,
+    targetY: (MAP_HEIGHT / 2) + (Math.random() - 0.5) * 300,
     speed: 0.5 + Math.random() * 0.5,
     flipX: false,
     isWalking: false,
     nextMoveTime: 0
+  })));
+
+  // Setup foxes
+  const foxesRef = useRef(Array.from({ length: 4 }).map((_, i) => ({
+    id: `fox-bottom-${i}`,
+    x: (MAP_WIDTH / 2) + (Math.random() - 0.5) * (MAP_WIDTH - 200),
+    y: MAP_HEIGHT - Math.random() * 400, // Bottom 400px of the map
+    targetX: (MAP_WIDTH / 2) + (Math.random() - 0.5) * (MAP_WIDTH - 200),
+    targetY: MAP_HEIGHT - Math.random() * 400,
+    speed: 0.3 + Math.random() * 0.4, // Slow/normal
+    flipX: false,
+    isWalking: false,
+    nextMoveTime: Math.random() * 5000 // Stagger initial idle
+  })));
+
+  // Setup dogs
+  const dogsRef = useRef(Array.from({ length: 4 }).map((_, i) => ({
+    id: `dog-bottomright-${i}`,
+    x: MAP_WIDTH - Math.random() * 400, // Bottom right 400px of map
+    y: MAP_HEIGHT - Math.random() * 400,
+    targetX: MAP_WIDTH - Math.random() * 400,
+    targetY: MAP_HEIGHT - Math.random() * 400,
+    speed: 0.3 + Math.random() * 0.4,
+    flipX: false,
+    isWalking: false,
+    nextMoveTime: Math.random() * 5000
+  })));
+
+  // Setup mice
+  const miceRef = useRef(Array.from({ length: 5 }).map((_, i) => ({
+    id: `mouse-rightcenter-${i}`,
+    x: MAP_WIDTH - Math.random() * 400, // Right 400px of map
+    y: (MAP_HEIGHT / 2) + (Math.random() - 0.5) * 400, // Center Y
+    targetX: MAP_WIDTH - Math.random() * 400,
+    targetY: (MAP_HEIGHT / 2) + (Math.random() - 0.5) * 400,
+    speed: 0.4 + Math.random() * 0.5, // Slightly faster, skittish
+    flipX: false,
+    isWalking: false,
+    nextMoveTime: Math.random() * 4000
+  })));
+
+  // Setup chickens
+  const chickensRef = useRef(Array.from({ length: 4 }).map((_, i) => ({
+    id: `chicken-leftcenter-${i}`,
+    x: Math.random() * 400, // Left 400px of map
+    y: (MAP_HEIGHT / 2) + (Math.random() - 0.5) * 400, // Center Y
+    targetX: Math.random() * 400,
+    targetY: (MAP_HEIGHT / 2) + (Math.random() - 0.5) * 400,
+    speed: 0.3 + Math.random() * 0.4,
+    flipX: false,
+    isWalking: false,
+    nextMoveTime: Math.random() * 5000
   })));
 
   // Last broadcasted state
@@ -224,18 +284,266 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
       localPos.current.isWalking = moved;
 
-      // Update chickens
+      // Update Cats
+      catsRef.current.forEach(cat => {
+        if (time > cat.nextMoveTime) {
+            if (cat.isWalking) {
+              cat.isWalking = false;
+              // Idle for exactly 10 seconds
+              cat.nextMoveTime = time + 10000;
+            } else {
+              // Pick a new target in the center of the map
+              cat.targetX = Math.max((MAP_WIDTH / 2) - 400, Math.min((MAP_WIDTH / 2) + 400, cat.x + (Math.random() - 0.5) * 300));
+              cat.targetY = Math.max((MAP_HEIGHT / 2) - 400, Math.min((MAP_HEIGHT / 2) + 400, cat.y + (Math.random() - 0.5) * 300));
+              cat.isWalking = true;
+              cat.flipX = cat.targetX < cat.x;
+              // Walk for 3 to 5 seconds
+              cat.nextMoveTime = time + 3000 + Math.random() * 2000;
+            }
+          }
+
+          if (cat.isWalking) {
+            const cdx = cat.targetX - cat.x;
+            const cdy = cat.targetY - cat.y;
+            const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+            
+            if (cdist > 1) {
+              cat.x += (cdx / cdist) * cat.speed;
+              cat.y += (cdy / cdist) * cat.speed;
+            } else {
+              // Reached target early! Start idling.
+              cat.isWalking = false;
+              cat.nextMoveTime = time + 10000;
+            }
+
+            const el = document.getElementById(cat.id);
+            if (el) {
+              el.style.left = `${cat.x}px`;
+              el.style.top = `${cat.y}px`;
+              el.style.zIndex = Math.floor(cat.y).toString();
+              
+              const img = el.querySelector('img');
+              if (img) {
+                img.style.transition = 'none';
+                img.style.transform = `scale(${cat.flipX ? -0.85 : 0.85}, 0.85)`;
+                if (img.getAttribute('src') !== CAT_WALK) {
+                  img.setAttribute('src', CAT_WALK);
+                }
+              }
+            }
+          } else {
+            const el = document.getElementById(cat.id);
+            if (el) {
+              const img = el.querySelector('img');
+              if (img) {
+                img.style.transition = 'none';
+                img.style.transform = `scale(${cat.flipX ? -1 : 1}, 1)`;
+                if (img.getAttribute('src') !== CAT_IDLE) {
+                  img.setAttribute('src', CAT_IDLE);
+                }
+              }
+            }
+          }
+        });
+
+      // Update Foxes
+      foxesRef.current.forEach(fox => {
+        if (time > fox.nextMoveTime) {
+          if (fox.isWalking) {
+            fox.isWalking = false;
+            // Idle for 5 to 15 seconds
+            fox.nextMoveTime = time + 5000 + Math.random() * 10000;
+          } else {
+            // Pick a new target at the bottom of the map
+            fox.targetX = Math.max(0, Math.min(MAP_WIDTH, fox.x + (Math.random() - 0.5) * 400));
+            fox.targetY = Math.max(MAP_HEIGHT - 600, Math.min(MAP_HEIGHT, fox.y + (Math.random() - 0.5) * 400));
+            fox.isWalking = true;
+            fox.flipX = fox.targetX < fox.x;
+            // Walk for 3 to 6 seconds
+            fox.nextMoveTime = time + 3000 + Math.random() * 3000;
+          }
+        }
+
+        if (fox.isWalking) {
+          const fdx = fox.targetX - fox.x;
+          const fdy = fox.targetY - fox.y;
+          const fdist = Math.sqrt(fdx * fdx + fdy * fdy);
+          
+          if (fdist > 1) {
+            fox.x += (fdx / fdist) * fox.speed;
+            fox.y += (fdy / fdist) * fox.speed;
+          } else {
+            fox.isWalking = false;
+            fox.nextMoveTime = time + 5000 + Math.random() * 10000;
+          }
+
+          const el = document.getElementById(fox.id);
+          if (el) {
+            el.style.left = `${fox.x}px`;
+            el.style.top = `${fox.y}px`;
+            el.style.zIndex = Math.floor(fox.y).toString();
+            
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${fox.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== FOX_WALK) {
+                img.setAttribute('src', FOX_WALK);
+              }
+            }
+          }
+        } else {
+          const el = document.getElementById(fox.id);
+          if (el) {
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${fox.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== FOX_IDLE) {
+                img.setAttribute('src', FOX_IDLE);
+              }
+            }
+          }
+        }
+      });
+
+      // Update Dogs
+      dogsRef.current.forEach(dog => {
+        if (time > dog.nextMoveTime) {
+          if (dog.isWalking) {
+            dog.isWalking = false;
+            // Idle for 5 to 15 seconds
+            dog.nextMoveTime = time + 5000 + Math.random() * 10000;
+          } else {
+            // Pick a new target at the bottom right of the map
+            dog.targetX = Math.max(MAP_WIDTH - 600, Math.min(MAP_WIDTH, dog.x + (Math.random() - 0.5) * 400));
+            dog.targetY = Math.max(MAP_HEIGHT - 600, Math.min(MAP_HEIGHT, dog.y + (Math.random() - 0.5) * 400));
+            dog.isWalking = true;
+            dog.flipX = dog.targetX < dog.x;
+            // Walk for 3 to 6 seconds
+            dog.nextMoveTime = time + 3000 + Math.random() * 3000;
+          }
+        }
+
+        if (dog.isWalking) {
+          const ddx = dog.targetX - dog.x;
+          const ddy = dog.targetY - dog.y;
+          const ddist = Math.sqrt(ddx * ddx + ddy * ddy);
+          
+          if (ddist > 1) {
+            dog.x += (ddx / ddist) * dog.speed;
+            dog.y += (ddy / ddist) * dog.speed;
+          } else {
+            dog.isWalking = false;
+            dog.nextMoveTime = time + 5000 + Math.random() * 10000;
+          }
+
+          const el = document.getElementById(dog.id);
+          if (el) {
+            el.style.left = `${dog.x}px`;
+            el.style.top = `${dog.y}px`;
+            el.style.zIndex = Math.floor(dog.y).toString();
+            
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${dog.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== DOG_WALK) {
+                img.setAttribute('src', DOG_WALK);
+              }
+            }
+          }
+        } else {
+          const el = document.getElementById(dog.id);
+          if (el) {
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${dog.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== DOG_IDLE) {
+                img.setAttribute('src', DOG_IDLE);
+              }
+            }
+          }
+        }
+      });
+
+      // Update Mice
+      miceRef.current.forEach(mouse => {
+        if (time > mouse.nextMoveTime) {
+          if (mouse.isWalking) {
+            mouse.isWalking = false;
+            // Idle for 3 to 10 seconds
+            mouse.nextMoveTime = time + 3000 + Math.random() * 7000;
+          } else {
+            // Pick a new target at the right center of the map
+            mouse.targetX = Math.max(MAP_WIDTH - 600, Math.min(MAP_WIDTH, mouse.x + (Math.random() - 0.5) * 400));
+            mouse.targetY = Math.max((MAP_HEIGHT / 2) - 400, Math.min((MAP_HEIGHT / 2) + 400, mouse.y + (Math.random() - 0.5) * 400));
+            mouse.isWalking = true;
+            mouse.flipX = mouse.targetX < mouse.x;
+            // Walk for 2 to 5 seconds
+            mouse.nextMoveTime = time + 2000 + Math.random() * 3000;
+          }
+        }
+
+        if (mouse.isWalking) {
+          const mdx = mouse.targetX - mouse.x;
+          const mdy = mouse.targetY - mouse.y;
+          const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+          
+          if (mdist > 1) {
+            mouse.x += (mdx / mdist) * mouse.speed;
+            mouse.y += (mdy / mdist) * mouse.speed;
+          } else {
+            mouse.isWalking = false;
+            mouse.nextMoveTime = time + 3000 + Math.random() * 7000;
+          }
+
+          const el = document.getElementById(mouse.id);
+          if (el) {
+            el.style.left = `${mouse.x}px`;
+            el.style.top = `${mouse.y}px`;
+            el.style.zIndex = Math.floor(mouse.y).toString();
+            
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${mouse.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== MOUSE_WALK) {
+                img.setAttribute('src', MOUSE_WALK);
+              }
+            }
+          }
+        } else {
+          const el = document.getElementById(mouse.id);
+          if (el) {
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${mouse.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== MOUSE_IDLE) {
+                img.setAttribute('src', MOUSE_IDLE);
+              }
+            }
+          }
+        }
+      });
+
+      // Update Chickens
       chickensRef.current.forEach(chicken => {
         if (time > chicken.nextMoveTime) {
           if (chicken.isWalking) {
             chicken.isWalking = false;
-            chicken.nextMoveTime = time + 1000 + Math.random() * 3000;
+            // Idle for 5 to 15 seconds
+            chicken.nextMoveTime = time + 5000 + Math.random() * 10000;
           } else {
-            chicken.targetX = Math.max(0, Math.min(MAP_WIDTH, chicken.x + (Math.random() - 0.5) * 300));
-            chicken.targetY = Math.max(0, Math.min(MAP_HEIGHT, chicken.y + (Math.random() - 0.5) * 300));
+            // Pick a new target at the left center of the map
+            chicken.targetX = Math.max(0, Math.min(400, chicken.x + (Math.random() - 0.5) * 400));
+            chicken.targetY = Math.max((MAP_HEIGHT / 2) - 400, Math.min((MAP_HEIGHT / 2) + 400, chicken.y + (Math.random() - 0.5) * 400));
             chicken.isWalking = true;
             chicken.flipX = chicken.targetX < chicken.x;
-            chicken.nextMoveTime = time + 5000;
+            // Walk for 3 to 6 seconds
+            chicken.nextMoveTime = time + 3000 + Math.random() * 3000;
           }
         }
 
@@ -243,28 +551,40 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const cdx = chicken.targetX - chicken.x;
           const cdy = chicken.targetY - chicken.y;
           const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+          
           if (cdist > 1) {
             chicken.x += (cdx / cdist) * chicken.speed;
             chicken.y += (cdy / cdist) * chicken.speed;
-
-            const el = document.getElementById(chicken.id);
-            if (el) {
-              el.style.left = `${chicken.x}px`;
-              el.style.top = `${chicken.y}px`;
-
-              const img = el.querySelector('img');
-              if (img) {
-                img.style.transform = `scaleX(${chicken.flipX ? -1 : 1})`;
-                if (img.src !== CHICKEN_WALK) img.src = CHICKEN_WALK;
-              }
-            }
           } else {
             chicken.isWalking = false;
-            chicken.nextMoveTime = time + 1000 + Math.random() * 2000;
-            const el = document.getElementById(chicken.id);
-            if (el) {
-              const img = el.querySelector('img');
-              if (img && img.src !== CHICKEN_IDLE) img.src = CHICKEN_IDLE;
+            chicken.nextMoveTime = time + 5000 + Math.random() * 10000;
+          }
+
+          const el = document.getElementById(chicken.id);
+          if (el) {
+            el.style.left = `${chicken.x}px`;
+            el.style.top = `${chicken.y}px`;
+            el.style.zIndex = Math.floor(chicken.y).toString();
+            
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${chicken.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== CHICKEN_WALK) {
+                img.setAttribute('src', CHICKEN_WALK);
+              }
+            }
+          }
+        } else {
+          const el = document.getElementById(chicken.id);
+          if (el) {
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${chicken.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== CHICKEN_IDLE) {
+                img.setAttribute('src', CHICKEN_IDLE);
+              }
             }
           }
         }
@@ -486,25 +806,146 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         {/* Semi-transparent overlay to make characters stand out */}
         <div className="absolute inset-0 bg-black/10 pointer-events-none" style={{ width: MAP_WIDTH, height: MAP_HEIGHT }} />
 
-        {/* Chickens */}
-        {chickensRef.current.map((chicken) => (
-          <div
-            id={chicken.id}
-            key={chicken.id}
-            className="absolute flex flex-col items-center z-0 pointer-events-none"
+        {/* Cats */}
+        {catsRef.current.map((cat) => (
+          <div 
+            id={cat.id}
+            key={cat.id}
+            className="absolute flex flex-col items-center pointer-events-none"
             style={{
-              left: `${chicken.x}px`,
-              top: `${chicken.y}px`,
+              left: `${cat.x}px`,
+              top: `${cat.y}px`,
+              zIndex: Math.floor(cat.y),
               transform: 'translate(-50%, -100%)'
             }}
           >
-            <img
-              src={chicken.isWalking ? CHICKEN_WALK : CHICKEN_IDLE}
-              alt="Chicken"
-              className="w-10 h-10 pixelated"
+            <img 
+              src={CAT_IDLE} 
+              alt="Cat" 
               style={{
-                transform: `scaleX(${chicken.flipX ? -1 : 1})`,
-                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
+                width: '49px',
+                height: '40px',
+                maxWidth: 'none',
+                imageRendering: 'pixelated',
+                transform: `scale(${cat.flipX ? -1 : 1}, 1)`,
+                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
+                transition: 'none'
+              }}
+            />
+          </div>
+        ))}
+
+        {/* Foxes */}
+        {foxesRef.current.map((fox) => (
+          <div 
+            id={fox.id}
+            key={fox.id}
+            className="absolute flex flex-col items-center pointer-events-none"
+            style={{
+              left: `${fox.x}px`,
+              top: `${fox.y}px`,
+              zIndex: Math.floor(fox.y),
+              transform: 'translate(-50%, -100%)'
+            }}
+          >
+            <img 
+              src={FOX_IDLE} 
+              alt="Fox" 
+              style={{
+                width: '49px',
+                height: '40px',
+                maxWidth: 'none',
+                imageRendering: 'pixelated',
+                transform: `scale(${fox.flipX ? -1 : 1}, 1)`,
+                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
+                transition: 'none'
+              }}
+            />
+          </div>
+        ))}
+
+        {/* Dogs */}
+        {dogsRef.current.map((dog) => (
+          <div 
+            id={dog.id}
+            key={dog.id}
+            className="absolute flex flex-col items-center pointer-events-none"
+            style={{
+              left: `${dog.x}px`,
+              top: `${dog.y}px`,
+              zIndex: Math.floor(dog.y),
+              transform: 'translate(-50%, -100%)'
+            }}
+          >
+            <img 
+              src={DOG_IDLE} 
+              alt="Dog" 
+              style={{
+                width: '51px',
+                height: '40px',
+                maxWidth: 'none',
+                imageRendering: 'pixelated',
+                transform: `scale(${dog.flipX ? -1 : 1}, 1)`,
+                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
+                transition: 'none'
+              }}
+            />
+          </div>
+        ))}
+
+        {/* Mice */}
+        {miceRef.current.map((mouse) => (
+          <div 
+            id={mouse.id}
+            key={mouse.id}
+            className="absolute flex flex-col items-center pointer-events-none"
+            style={{
+              left: `${mouse.x}px`,
+              top: `${mouse.y}px`,
+              zIndex: Math.floor(mouse.y),
+              transform: 'translate(-50%, -100%)'
+            }}
+          >
+            <img 
+              src={MOUSE_IDLE} 
+              alt="Mouse" 
+              style={{
+                width: '57px',
+                height: '40px',
+                maxWidth: 'none',
+                imageRendering: 'pixelated',
+                transform: `scale(${mouse.flipX ? -1 : 1}, 1)`,
+                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
+                transition: 'none'
+              }}
+            />
+          </div>
+        ))}
+
+        {/* Chickens */}
+        {chickensRef.current.map((chicken) => (
+          <div 
+            id={chicken.id}
+            key={chicken.id}
+            className="absolute flex flex-col items-center pointer-events-none"
+            style={{
+              left: `${chicken.x}px`,
+              top: `${chicken.y}px`,
+              zIndex: Math.floor(chicken.y),
+              transform: 'translate(-50%, -100%)'
+            }}
+          >
+            <img 
+              src={CHICKEN_IDLE} 
+              alt="Chicken" 
+              style={{
+                width: '44px',
+                height: '40px',
+                maxWidth: 'none',
+                imageRendering: 'pixelated',
+                transform: `scale(${chicken.flipX ? -1 : 1}, 1)`,
+                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
+                transition: 'none'
               }}
             />
           </div>
@@ -644,6 +1085,8 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           <ArrowRight size={20} />
         </button>
       </div>
+
+      {/* Global Chat UI Layer */}
     </div>
   );
 }
