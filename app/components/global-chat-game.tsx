@@ -130,7 +130,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
   // Refs for direct DOM manipulation (Performance optimization for Safari)
   const playerRef = useRef<HTMLDivElement>(null);
-  const playerImgRef = useRef<HTMLImageElement>(null);
+  const minimapPlayerRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const idleTrackTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -165,22 +165,15 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       if (playerEl) {
         playerEl.style.left = `${data.x}px`;
         playerEl.style.top = `${data.y}px`;
-        const img = playerEl.querySelector('.animate-bounce');
-        // Animation handling is now fully managed by React state for remote players through latestPositions!
-        // We just need to trigger a small re-render for animation state changes if needed.
-        // Actually, since React handles remote players, we shouldn't manually manipulate their classes anymore
-        // because PlayerSprite encapsulates 5 different animated parts.
-        // The most performant way for remote players is to let React re-render when they start/stop walking.
-        // But since we want to avoid full tree re-renders, we'll let the DOM manipulation handle X/Y,
-        // and only trigger React state for flipX/isWalking if they changed.
+        playerEl.style.zIndex = Math.floor(data.y).toString();
+      }
+
+      const minimapEl = document.getElementById(`minimap-${data.user_id}`);
+      if (minimapEl) {
+        minimapEl.style.left = `${(data.x / MAP_WIDTH) * 100}%`;
+        minimapEl.style.top = `${(data.y / MAP_HEIGHT) * 100}%`;
       }
       
-      // We will dispatch a custom event that individual PlayerSprites could listen to, 
-      // but to keep it simple, we let the parent map handle it if we want.
-      // Wait, we don't need to do anything else here for remote players. 
-      // When their broadcast is received, if their flipX or isWalking changed, React will re-render anyway
-      // because we update onlinePlayers? No, broadcast doesn't update onlinePlayers.
-      // Let's just dispatch an event to the specific player sprite!
       window.dispatchEvent(new CustomEvent(`sprite-update-${data.user_id}`, { detail: { flipX: data.flipX, isWalking: data.isWalking } }));
     };
     window.addEventListener('player-move', handlePlayerMove);
@@ -281,7 +274,13 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       if (playerRef.current) {
         playerRef.current.style.left = `${localPos.current.x}px`;
         playerRef.current.style.top = `${localPos.current.y}px`;
+        playerRef.current.style.zIndex = Math.floor(localPos.current.y).toString();
         playerRef.current.style.transform = `translate(-50%, -100%)`;
+      }
+
+      if (minimapPlayerRef.current) {
+        minimapPlayerRef.current.style.left = `${(localPos.current.x / MAP_WIDTH) * 100}%`;
+        minimapPlayerRef.current.style.top = `${(localPos.current.y / MAP_HEIGHT) * 100}%`;
       }
 
       if (moved !== localPos.current.isWalking || localPos.current.flipX !== lastBroadcast.current.flipX) {
@@ -563,6 +562,39 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             {sessionInfo.username}
           </span>
           <PlayerSprite username={sessionInfo.username} flipX={localSpriteState.flipX} isWalking={localSpriteState.isWalking} />
+        </div>
+      </div>
+
+      {/* Minimap Overlay */}
+      <div className="absolute top-24 left-[5%] md:left-[15%] w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-transparent border border-white/50 rounded-md z-30 overflow-hidden pointer-events-none transform-gpu">
+        <div className="w-full h-full relative">
+          {/* Remote Players on Minimap */}
+          {otherPlayers.map(p => {
+            const currentX = latestPositions.current[p.user_id]?.x ?? p.x;
+            const currentY = latestPositions.current[p.user_id]?.y ?? p.y;
+            return (
+              <div 
+                id={`minimap-${p.user_id}`}
+                key={`minimap-${p.user_id}`}
+                className="absolute w-1.5 h-1.5 bg-red-500 rounded-full shadow-sm transition-all duration-[75ms] ease-linear"
+                style={{
+                  left: `${(currentX / MAP_WIDTH) * 100}%`,
+                  top: `${(currentY / MAP_HEIGHT) * 100}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+            );
+          })}
+          {/* Local Player on Minimap */}
+          <div 
+            ref={minimapPlayerRef}
+            className="absolute w-2 h-2 bg-green-400 rounded-full border border-white/50 shadow-sm z-10 transition-all duration-75 ease-linear"
+            style={{
+              left: `${(localPos.current.x / MAP_WIDTH) * 100}%`,
+              top: `${(localPos.current.y / MAP_HEIGHT) * 100}%`,
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
         </div>
       </div>
 
