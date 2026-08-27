@@ -416,16 +416,22 @@ export default function GlobalChatWidget() {
 
   return (
     <>
-      {/* Blurred Background Overlay */}
+      {/* Split Background Overlays */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-background/20 backdrop-blur-md z-40 transition-all duration-500"
-          />
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-40 pointer-events-none flex flex-col md:flex-row"
+          >
+            {/* Bottom side (Mobile) / Left side (Desktop): Blur for chat */}
+            <div className="w-full md:w-[50vw] h-[50vh] md:h-full bg-background/20 backdrop-blur-md pointer-events-auto order-2 md:order-1 relative z-0" onClick={() => setIsOpen(false)} />
+
+            {/* Top side (Mobile) / Right side (Desktop): Solid White for game */}
+            <div className="w-full md:w-[50vw] h-[50vh] md:h-full bg-white dark:bg-black pointer-events-auto order-1 md:order-2 relative z-10 shadow-[0_0_100px_100px_rgba(255,255,255,1),0_0_200px_100px_rgba(255,255,255,0.8)] dark:shadow-[0_0_100px_100px_rgba(0,0,0,1),0_0_200px_100px_rgba(0,0,0,0.8)]" onClick={() => setIsOpen(false)} />
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -627,25 +633,29 @@ export default function GlobalChatWidget() {
       {/* Game Canvas */}
       <AnimatePresence>
         {isOpen && isSetupComplete && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 md:translate-x-0 md:top-auto md:left-auto md:bottom-4 md:right-4 z-40 pointer-events-none">
+          <div className="fixed top-0 left-0 w-full h-[50vh] md:w-auto md:h-auto md:-translate-x-0 md:top-auto md:left-auto md:bottom-4 md:right-4 z-50 pointer-events-none">
+            <style>
+              {`
+                @media (min-width: 768px) {
+                  .desktop-game-mask {
+                    -webkit-mask-image: radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+                    -webkit-mask-composite: source-in;
+                    mask-image: radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+                    mask-composite: intersect;
+                  }
+                }
+              `}
+            </style>
             <motion.div
               initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
               transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-              className="w-[95vw] md:w-[650px] h-[40vh] md:h-[650px] pointer-events-auto overflow-hidden bg-white rounded-[40px] md:rounded-[100px] shadow-[0_0_30px_10px_rgba(255,255,255,0.8)] dark:shadow-[0_0_30px_10px_rgba(0,0,0,0.8)] dark:bg-black border-none"
+              className="w-full h-full md:w-[650px] md:h-[650px] pointer-events-auto overflow-hidden bg-white rounded-none md:rounded-[100px] shadow-none md:shadow-[0_0_30px_10px_rgba(255,255,255,0.8)] md:dark:shadow-[0_0_30px_10px_rgba(0,0,0,0.8)] dark:bg-black border-none"
             >
-              <div
-                className="w-full h-full"
-                style={{
-                  maskImage: "radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
-                  WebkitMaskImage: "radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
-                  maskComposite: "intersect",
-                  WebkitMaskComposite: "source-in"
-                }}
-              >
-                <GlobalChatGame 
-                  sessionInfo={sessionInfo} 
+              <div className="w-full h-full desktop-game-mask">
+                <GlobalChatGame
+                  sessionInfo={sessionInfo}
                   channelRef={channelRef}
                   channelReadyRef={channelReadyRef}
                   sharedPresenceRef={sharedPresenceRef}
