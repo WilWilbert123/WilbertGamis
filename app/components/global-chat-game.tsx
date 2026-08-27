@@ -414,8 +414,10 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         {/* Remote Players */}
         {otherPlayers.map((player) => {
-          const latestPos = latestPositions.current[player.user_id] || { x: player.x, y: player.y, flipX: player.flipX, isWalking: player.isWalking };
-          const msg = getLatestMessage(player.user_id);
+          const latestMsg = getLatestMessage(player.user_id);
+          const currentX = latestPositions.current[player.user_id]?.x ?? player.x;
+          const currentY = latestPositions.current[player.user_id]?.y ?? player.y;
+          const currentFlipX = latestPositions.current[player.user_id]?.flipX ?? player.flipX;
 
           return (
             <div
@@ -423,14 +425,14 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               key={player.user_id}
               className="absolute flex flex-col items-center z-10 pointer-events-none transition-all duration-200 ease-linear"
               style={{
-                left: `${latestPos.x || MAP_WIDTH / 2}px`,
-                top: latestPos.y || MAP_HEIGHT / 2,
+                left: `${currentX}px`,
+                top: `${currentY}px`,
                 transform: 'translate(-50%, -100%)'
               }}
             >
-              {msg && (
+              {latestMsg && (
                 <div className="absolute bottom-full mb-1 bg-white text-black text-[10px] font-mono px-2 py-1 rounded-lg shadow-md whitespace-nowrap max-w-[150px] overflow-hidden text-ellipsis border border-gray-200">
-                  {msg}
+                  {latestMsg}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
                 </div>
               )}
@@ -442,7 +444,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 alt={player.username}
                 className="w-10 h-10 pixelated"
                 style={{
-                  transform: `scaleX(${latestPos.flipX ? -1 : 1})`,
+                  transform: `scaleX(${currentFlipX ? -1 : 1})`,
                   filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
                 }}
               />

@@ -267,7 +267,14 @@ export default function GlobalChatWidget() {
           });
         });
 
-        const players = Object.values(state).flat() as any[];
+        const allPlayers = Object.values(state).flat() as any[];
+        // Deduplicate by user_id in case of ghost connections (e.g., iOS backgrounding and reconnecting quickly)
+        const uniquePlayersMap = new Map();
+        allPlayers.forEach(p => {
+          uniquePlayersMap.set(p.user_id, p);
+        });
+        const players = Array.from(uniquePlayersMap.values());
+        
         setOnlinePlayers(players);
 
         setTypingUsers(currentTyping);
@@ -427,10 +434,10 @@ export default function GlobalChatWidget() {
             className="fixed inset-0 z-40 pointer-events-none flex flex-col md:flex-row"
           >
             {/* Bottom side (Mobile) / Left side (Desktop): Blur for chat */}
-            <div className="w-full md:w-[50vw] h-[50vh] md:h-full bg-background/20 backdrop-blur-md pointer-events-auto order-2 md:order-1 relative z-0" onClick={() => setIsOpen(false)} />
+            <div className="flex-1 w-full md:w-[50vw] md:h-full md:flex-none bg-background/20 backdrop-blur-md pointer-events-auto order-2 md:order-1 relative z-0" onClick={() => setIsOpen(false)} />
 
             {/* Top side (Mobile) / Right side (Desktop): Solid White for game */}
-            <div className="w-full md:w-[50vw] h-[50vh] md:h-full bg-white dark:bg-black pointer-events-auto order-1 md:order-2 relative z-10 shadow-[0_0_100px_100px_rgba(255,255,255,1),0_0_200px_100px_rgba(255,255,255,0.8)] dark:shadow-[0_0_100px_100px_rgba(0,0,0,1),0_0_200px_100px_rgba(0,0,0,0.8)]" onClick={() => setIsOpen(false)} />
+            <div className="flex-1 w-full md:w-[50vw] md:h-full md:flex-none bg-white dark:bg-black pointer-events-auto order-1 md:order-2 relative z-10 shadow-[0_0_100px_100px_rgba(255,255,255,1),0_0_200px_100px_rgba(255,255,255,0.8)] dark:shadow-[0_0_100px_100px_rgba(0,0,0,1),0_0_200px_100px_rgba(0,0,0,0.8)]" onClick={() => setIsOpen(false)} />
           </motion.div>
         )}
       </AnimatePresence>
