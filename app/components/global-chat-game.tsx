@@ -306,14 +306,37 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
   if (!isPlaying) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-transparent rounded-xl border-l border-foreground/10 text-center p-6">
-        <h2 className="text-xl font-bold font-mono uppercase mb-4 text-foreground/80">Join the World</h2>
-        <p className="text-xs text-foreground/50 mb-6 font-mono lowercase">
+      <div 
+        className="w-full h-full flex flex-col items-center justify-center bg-transparent text-center p-6" 
+        style={{ fontFamily: "'Press Start 2P', monospace" }}
+      >
+        <h2 
+          className="text-lg md:text-xl font-bold uppercase mb-4 text-foreground/80" 
+          style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.1)" }}
+        >
+          Join the World
+        </h2>
+        
+        <p className="text-[9px] md:text-[10px] text-foreground/60 mb-10 max-w-[80%] leading-loose">
           step into the multiplayer pixel world and hang out with the global chat.
         </p>
+
+        <div className="flex items-center gap-2 mb-10 text-[10px] text-foreground/50">
+          <div className="flex gap-1">
+            <span className="px-2 py-1.5 border-2 border-foreground/20 bg-foreground/5 rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)]">W</span>
+            <span className="px-2 py-1.5 border-2 border-foreground/20 bg-foreground/5 rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)]">A</span>
+            <span className="px-2 py-1.5 border-2 border-foreground/20 bg-foreground/5 rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)]">S</span>
+            <span className="px-2 py-1.5 border-2 border-foreground/20 bg-foreground/5 rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)]">D</span>
+          </div>
+          <span className="ml-2 lowercase">to move</span>
+        </div>
+
         <button
           onClick={() => setIsPlaying(true)}
-          className="px-6 py-3 bg-foreground text-background font-bold uppercase font-mono text-sm rounded-lg hover:scale-105 transition-transform shadow-[4px_4px_0_0_rgba(255,255,255,0.1)]"
+          className="px-6 py-4 bg-foreground text-background uppercase text-[10px] hover:scale-105 active:scale-95 transition-transform"
+          style={{
+            boxShadow: "4px 4px 0px 0px rgba(0,0,0,0.2)"
+          }}
         >
           Click to Start
         </button>
