@@ -78,11 +78,16 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         const img = playerEl.querySelector('img');
         if (img) {
           img.style.transform = `scaleX(${data.flipX ? -1 : 1})`;
-          if (data.isWalking && !img.classList.contains('animate-bounce')) {
-            img.classList.add('animate-bounce');
-          } else if (!data.isWalking && img.classList.contains('animate-bounce')) {
-            img.classList.remove('animate-bounce');
-          }
+        }
+        
+        if (data.isWalking && !playerEl.classList.contains('is-walking')) {
+          playerEl.classList.add('is-walking');
+          const avatar = playerEl.querySelector('.avatar-container');
+          if (avatar) avatar.classList.add('animate-bounce');
+        } else if (!data.isWalking && playerEl.classList.contains('is-walking')) {
+          playerEl.classList.remove('is-walking');
+          const avatar = playerEl.querySelector('.avatar-container');
+          if (avatar) avatar.classList.remove('animate-bounce');
         }
       }
     };
@@ -189,10 +194,18 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
       if (playerImgRef.current) {
         playerImgRef.current.style.transform = `scaleX(${localPos.current.flipX ? -1 : 1})`;
-        if (moved && !playerImgRef.current.classList.contains('animate-bounce')) {
-          playerImgRef.current.classList.add('animate-bounce');
-        } else if (!moved && playerImgRef.current.classList.contains('animate-bounce')) {
-          playerImgRef.current.classList.remove('animate-bounce');
+      }
+      
+      const containerEl = playerRef.current;
+      if (containerEl) {
+        if (moved && !containerEl.classList.contains('is-walking')) {
+          containerEl.classList.add('is-walking');
+          const avatar = containerEl.querySelector('.avatar-container');
+          if (avatar) avatar.classList.add('animate-bounce');
+        } else if (!moved && containerEl.classList.contains('is-walking')) {
+          containerEl.classList.remove('is-walking');
+          const avatar = containerEl.querySelector('.avatar-container');
+          if (avatar) avatar.classList.remove('animate-bounce');
         }
       }
 
@@ -366,6 +379,23 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-white dark:bg-black overflow-hidden select-none">
+      <style>{`
+        @keyframes walk-left {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        @keyframes walk-right {
+          0%, 100% { transform: translateY(-3px); }
+          50% { transform: translateY(0); }
+        }
+        .is-walking .player-leg-l, .is-walking .player-arm-r {
+          animation: walk-left 0.4s infinite;
+        }
+        .is-walking .player-leg-r, .is-walking .player-arm-l {
+          animation: walk-right 0.4s infinite;
+        }
+      `}</style>
+      
       {/* World Container (Moves with Camera) */}
       <div
         ref={worldRef}
@@ -419,11 +449,13 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const currentY = latestPositions.current[player.user_id]?.y ?? player.y;
           const currentFlipX = latestPositions.current[player.user_id]?.flipX ?? player.flipX;
 
+          const currentIsWalking = latestPositions.current[player.user_id]?.isWalking ?? player.isWalking;
+
           return (
             <div
               id={`player-${player.user_id}`}
               key={player.user_id}
-              className="absolute flex flex-col items-center z-10 pointer-events-none transition-all duration-200 ease-linear"
+              className={`absolute flex flex-col items-center z-10 pointer-events-none transition-all duration-200 ease-linear player-container ${currentIsWalking ? 'is-walking' : ''}`}
               style={{
                 left: `${currentX}px`,
                 top: `${currentY}px`,
@@ -439,15 +471,36 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               <span className="text-[10px] font-mono text-white/90 bg-black/50 px-1.5 py-0.5 rounded shadow-sm mb-1 whitespace-nowrap">
                 {player.username}
               </span>
-              <img
-                src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${player.username}`}
-                alt={player.username}
-                className="w-10 h-10 pixelated"
-                style={{
-                  transform: `scaleX(${currentFlipX ? -1 : 1})`,
-                  filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
-                }}
-              />
+              
+              {/* Avatar Container */}
+              <div className={`relative flex flex-col items-center avatar-container ${currentIsWalking ? 'animate-bounce' : ''}`} style={{ animationDuration: '0.4s' }}>
+                {/* Left Arm */}
+                <div className="player-arm-l absolute top-6 -left-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
+                {/* Right Arm */}
+                <div className="player-arm-r absolute top-6 -right-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
+                
+                <img
+                  src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${player.username}`}
+                  alt={player.username}
+                  className="w-10 h-10 pixelated relative z-10"
+                  style={{
+                    transform: `scaleX(${currentFlipX ? -1 : 1})`,
+                    filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
+                  }}
+                />
+                
+                {/* Legs */}
+                <div className="flex gap-1.5 -mt-1.5 z-0 relative">
+                  <div className="player-leg-l w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
+                    <div className="flex-1" />
+                    <div className="h-1.5 bg-amber-900" />
+                  </div>
+                  <div className="player-leg-r w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
+                    <div className="flex-1" />
+                    <div className="h-1.5 bg-amber-900" />
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })}
@@ -455,7 +508,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         {/* Local Player */}
         <div
           ref={playerRef}
-          className="absolute flex flex-col items-center z-20"
+          className="absolute flex flex-col items-center z-20 player-container"
           style={{
             left: localPos.current.x,
             top: localPos.current.y,
@@ -471,17 +524,37 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           <span className="text-[10px] font-mono text-green-300 bg-black/60 px-1.5 py-0.5 rounded shadow-sm mb-1 whitespace-nowrap">
             {sessionInfo.username}
           </span>
-          <img
-            ref={playerImgRef}
-            src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${sessionInfo.username}`}
-            alt={sessionInfo.username}
-            className={`w-10 h-10 pixelated transition-transform`}
-            style={{
-              transform: `scaleX(${localPos.current.flipX ? -1 : 1})`,
-              filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))',
-              animationDuration: '0.4s'
-            }}
-          />
+          
+          {/* Avatar Container */}
+          <div className="relative flex flex-col items-center avatar-container" style={{ animationDuration: '0.4s' }}>
+            {/* Left Arm */}
+            <div className="player-arm-l absolute top-6 -left-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
+            {/* Right Arm */}
+            <div className="player-arm-r absolute top-6 -right-1 w-2.5 h-2.5 bg-white border border-gray-300 rounded-sm z-20 shadow-sm" />
+            
+            <img
+              ref={playerImgRef}
+              src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${sessionInfo.username}`}
+              alt={sessionInfo.username}
+              className={`w-10 h-10 pixelated relative z-10 transition-transform`}
+              style={{
+                transform: `scaleX(${localPos.current.flipX ? -1 : 1})`,
+                filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.5))'
+              }}
+            />
+            
+            {/* Legs */}
+            <div className="flex gap-1.5 -mt-1.5 z-0 relative">
+              <div className="player-leg-l w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
+                 <div className="flex-1" />
+                 <div className="h-1.5 bg-amber-900" />
+              </div>
+              <div className="player-leg-r w-2.5 h-3.5 bg-slate-700 rounded-sm overflow-hidden flex flex-col border border-black/20 shadow-sm">
+                 <div className="flex-1" />
+                 <div className="h-1.5 bg-amber-900" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
