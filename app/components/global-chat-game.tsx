@@ -3,6 +3,26 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 
+
+interface GamePet {
+  id: string;
+  type: "fox" | "dog" | "turtle" | "snake" | "cat";
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  flipX: boolean;
+  isWalking: boolean;
+  scale: number;
+  speed: number;
+  idleDuration: number;
+  walkDuration: number;
+  nextActionTime: number;
+  targetX?: number;
+  targetY?: number;
+  lastHitTimes?: Record<string, number>;
+}
+
 interface Player {
   user_id: string;
   username: string;
@@ -24,6 +44,14 @@ const MOUSE_IDLE = "/pets/mouse/brown_idle_8fps.gif";
 const CHICKEN_WALK = "/pets/chicken/white_walk_8fps.gif";
 const CHICKEN_IDLE = "/pets/chicken/white_idle_8fps.gif";
 
+
+const PET_SPEEDS: Record<string, number> = {
+  fox: 60,
+  dog: 60,
+  turtle: 20,
+  snake: 30
+};
+
 interface GlobalChatGameProps {
   sessionInfo: { id: string; username: string };
   channelRef: React.MutableRefObject<any>;
@@ -42,7 +70,7 @@ const getPlayerColor = (username: string) => {
   return `hsl(${hue}, 70%, 50%)`;
 };
 
-function PlayerSprite({ username, flipX, isWalking }: { username: string, flipX: boolean, isWalking: boolean }) {
+function PlayerSprite({ username, flipX, isWalking, isDead }: { username: string, flipX: boolean, isWalking: boolean, isDead?: boolean }) {
   const shirtColor = getPlayerColor(username);
 
   return (
@@ -61,18 +89,24 @@ function PlayerSprite({ username, flipX, isWalking }: { username: string, flipX:
       `}</style>
 
       {/* Head */}
-      <div className={`w-10 h-[26px] overflow-hidden relative z-10 ${isWalking ? 'animate-bounce' : ''}`} style={{ animationDuration: '0.4s' }}>
+      <div className={`w-10 h-[26px] overflow-hidden relative z-10 ${(isWalking && !isDead) ? 'animate-bounce' : ''}`} style={{ animationDuration: '0.4s' }}>
         <img
           src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`}
           alt={username}
           className="w-10 h-10 max-w-none absolute top-0 left-0 pixelated"
           style={{ transform: `scaleX(${flipX ? -1 : 1})` }}
         />
+        {isDead && (
+          <div className="absolute top-[13px] left-[13px] right-[13px] flex justify-between pointer-events-none opacity-80" style={{ transform: `scaleX(${flipX ? -1 : 1})` }}>
+            <span className="text-[#111] text-[10px] font-bold leading-none pixelated">x</span>
+            <span className="text-[#111] text-[10px] font-bold leading-none pixelated">x</span>
+          </div>
+        )}
       </div>
 
       {/* Body Container */}
       <div className={`relative w-[24px] h-[16px] flex justify-center -mt-[2px] z-0`} style={{ transform: `scaleX(${flipX ? -1 : 1})` }}>
-        
+
         {/* Left Arm */}
         <div className={`absolute top-[2px] -left-[2px] w-[6px] h-[10px] z-10 ${isWalking ? 'anim-walk-1' : ''}`}>
           <div className="w-full h-[8px]" style={{ backgroundColor: shirtColor }} />
@@ -154,7 +188,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -164,12 +198,12 @@ const MAPS: Record<string, MapConfig> = {
       { id: "to_island", x: 1690, y: 1650, width: 60, height: 100, destMapId: "island", destX: 500, destY: 500 }
     ]
   },
-  rainy: {
-    backgroundImage: "/rpg_map_large_rainy.jpeg",
+  space: {
+    backgroundImage: "/rpg_map_large_space.jpeg",
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "forest", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "forest", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -184,7 +218,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "forest", destX: 300, destY: 1000 },
@@ -199,7 +233,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -214,7 +248,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "forest", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -229,7 +263,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -244,7 +278,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "forest", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -259,7 +293,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -274,7 +308,7 @@ const MAPS: Record<string, MapConfig> = {
     width: 2000,
     height: 2000,
     portals: [
-      { id: "to_rainy", x: 970, y: 80, width: 60, height: 100, destMapId: "rainy", destX: 1000, destY: 1700 },
+      { id: "to_space", x: 970, y: 80, width: 60, height: 100, destMapId: "space", destX: 1000, destY: 1700 },
       { id: "to_tech", x: 970, y: 1820, width: 60, height: 100, destMapId: "tech", destX: 1000, destY: 300 },
       { id: "to_amazon", x: 80, y: 950, width: 60, height: 100, destMapId: "amazon", destX: 1700, destY: 1000 },
       { id: "to_desert", x: 1860, y: 950, width: 60, height: 100, destMapId: "desert", destX: 300, destY: 1000 },
@@ -286,23 +320,142 @@ const MAPS: Record<string, MapConfig> = {
   }
 };
 
+
+
 export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRef, sharedPresenceRef, onlinePlayers, messages = [] }: GlobalChatGameProps) {
   // Local Player State
   const [isPlaying, setIsPlaying] = useState(false);
   const [localSpriteState, setLocalSpriteState] = useState({ flipX: false, isWalking: false });
   const [currentMapId, setCurrentMapId] = useState("forest");
+  const [showGameOver, setShowGameOver] = useState(false);
+
+  const handleRespawn = useCallback(() => {
+    setShowGameOver(false);
+    isDeadRef.current = false;
+
+    localHealth.current = 100;
+    localPos.current.x = 1000;
+    localPos.current.y = 1000;
+    localPos.current.mapId = "forest";
+    setCurrentMapId("forest");
+
+    if (channelReadyRef.current && channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'move',
+        payload: {
+          user_id: sessionInfo.id,
+          x: 1000,
+          y: 1000,
+          flipX: localPos.current.flipX,
+          isWalking: false,
+          mapId: "forest"
+        }
+      });
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'health_update',
+        payload: {
+          user_id: sessionInfo.id,
+          health: 100,
+          isDead: false
+        }
+      });
+    }
+
+    if (playerHealthBarRef.current) {
+      playerHealthBarRef.current.style.width = '100%';
+      playerHealthBarRef.current.style.backgroundColor = '#22c55e';
+    }
+
+    if (playerRef.current) {
+      playerRef.current.style.transition = 'none';
+      playerRef.current.style.transform = `scaleX(${localPos.current.flipX ? -1 : 1})`;
+    }
+  }, [sessionInfo.id]);
+
+  // Map Pets
+  const [mapPets, setMapPets] = useState<GamePet[]>([]);
+  const petsRef = useRef<GamePet[]>([]);
+
+  // Spawn pets when map changes
+  useEffect(() => {
+    if (isPlaying && currentMapId === "amazon") {
+      const amazonPets: { type: "fox" | "dog" | "turtle" | "snake", count: number }[] = [
+        { type: "fox", count: 10 },
+        { type: "dog", count: 12 },
+        { type: "turtle", count: 9 },
+        { type: "snake", count: 5 }
+      ];
+
+      const newPets: GamePet[] = [];
+      amazonPets.forEach(({ type, count }) => {
+        for (let i = 0; i < count; i++) {
+          const isDogOrFox = type === 'dog' || type === 'fox';
+
+          newPets.push({
+            id: `pet-${type}-${Math.random().toString(36).substr(2, 9)}`,
+            type,
+            x: Math.random() * MAP_WIDTH,
+            y: MAP_HEIGHT * (0.35 + Math.random() * 0.65), // Avoid top 35% of map
+            vx: 0,
+            vy: 0,
+            flipX: Math.random() > 0.5,
+            isWalking: false,
+            scale: isDogOrFox ? 1 : (0.6 + Math.random() * 0.8),
+            speed: PET_SPEEDS[type] + (Math.random() * 20 - 10),
+            idleDuration: isDogOrFox ? 10000 + Math.random() * 2000 : 4000 + Math.random() * 2000,
+            walkDuration: isDogOrFox ? 3000 + Math.random() * 1000 : 1500 + Math.random() * 1500,
+            nextActionTime: Date.now() + Math.random() * 3000
+          });
+        }
+      });
+      petsRef.current = newPets;
+      setMapPets(newPets);
+    } else {
+      petsRef.current = [];
+      setMapPets([]);
+    }
+  }, [currentMapId, isPlaying]);
+
+
 
   // We use refs for local position to update instantly without React re-renders lagging the physics
   const localPos = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, flipX: false, isWalking: false, mapId: "forest" });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
+  const isDeadRef = useRef(false);
 
   // Refs for direct DOM manipulation (Performance optimization for Safari)
   const playerRef = useRef<HTMLDivElement>(null);
+  const playerHealthBarRef = useRef<HTMLDivElement>(null);
+  const localHealth = useRef(100);
+  const lastHitTime = useRef(0);
+  const playersHealth = useRef<Record<string, { hp: number, lastHitTime: number }>>({});
   const minimapPlayerRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const idleTrackTimeout = useRef<NodeJS.Timeout | null>(null);
   const latestPositions = useRef<Record<string, { x: number, y: number, flipX: boolean, isWalking: boolean, mapId?: string }>>({});
+
+  // Preload all map images when the game loads to ensure zero delay when using portals
+  useEffect(() => {
+    const imagesToPreload = [
+      "/rpg_map_large.png",
+      "/rpg_map_large_night.jpeg"
+    ];
+
+    // Add all map backgrounds
+    Object.values(MAPS).forEach(map => {
+      if (!imagesToPreload.includes(map.backgroundImage)) {
+        imagesToPreload.push(map.backgroundImage);
+      }
+    });
+
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
 
   // Setup cats with persistent refs to avoid re-renders resetting their state
   const catsRef = useRef(Array.from({ length: 3 }).map((_, i) => ({
@@ -371,6 +524,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
   // Last broadcasted state
   const lastBroadcast = useRef({ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2, time: 0, wasWalking: false, flipX: false, mapId: "forest" });
+  const lastRenderedState = useRef({ flipX: false, isWalking: false });
 
   // Listen for broadcast events from other players
   useEffect(() => {
@@ -393,11 +547,55 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         minimapEl.style.left = `${(data.x / MAP_WIDTH) * 100}%`;
         minimapEl.style.top = `${(data.y / MAP_HEIGHT) * 100}%`;
       }
-      
+
       window.dispatchEvent(new CustomEvent(`sprite-update-${data.user_id}`, { detail: { flipX: data.flipX, isWalking: data.isWalking } }));
     };
+
+    const handlePlayerHealth = (e: any) => {
+      const data = e.detail;
+      if (data.user_id === sessionInfo.id) return;
+
+      if (!playersHealth.current[data.user_id]) {
+        playersHealth.current[data.user_id] = { hp: 100, lastHitTime: 0 };
+      }
+
+      const remoteStats = playersHealth.current[data.user_id];
+      remoteStats.hp = data.health;
+
+      const healthBarEl = document.getElementById(`healthbar-${data.user_id}`);
+      if (healthBarEl) {
+        const hpPercent = (remoteStats.hp / 100) * 100;
+        healthBarEl.style.width = `${hpPercent}%`;
+
+        if (hpPercent > 50) {
+          healthBarEl.style.backgroundColor = '#22c55e'; // green
+        } else if (hpPercent > 25) {
+          healthBarEl.style.backgroundColor = '#eab308'; // yellow
+        } else {
+          healthBarEl.style.backgroundColor = '#ef4444'; // red
+        }
+      }
+
+      const playerEl = document.getElementById(`player-${data.user_id}`);
+      if (playerEl && data.isDead) {
+        playerEl.style.transition = 'transform 0.5s ease-in-out';
+        const pos = latestPositions.current[data.user_id] || { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2 };
+        playerEl.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) translate(-50%, -100%) rotate(90deg) translate(10px, 30px)`;
+      } else if (playerEl && !data.isDead) {
+        // Just in case they respawned
+        const pos = latestPositions.current[data.user_id] || { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2 };
+        playerEl.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) translate(-50%, -100%)`;
+      }
+
+      window.dispatchEvent(new CustomEvent(`sprite-update-${data.user_id}`, { detail: { isDead: data.isDead } }));
+    };
+
     window.addEventListener('player-move', handlePlayerMove);
-    return () => window.removeEventListener('player-move', handlePlayerMove);
+    window.addEventListener('player-health', handlePlayerHealth);
+    return () => {
+      window.removeEventListener('player-move', handlePlayerMove);
+      window.removeEventListener('player-health', handlePlayerHealth);
+    };
   }, [sessionInfo.id, currentMapId]);
 
   // Game Loop
@@ -413,6 +611,110 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       ...sharedPresenceRef.current
     });
 
+    const showHitEffect = (x: number, y: number, damage: number, petType: string) => {
+      if (!worldRef.current) return;
+
+      // Damage Number (floats up from the pet)
+      const dmgEl = document.createElement('div');
+      dmgEl.className = 'absolute text-red-500 font-bold pointer-events-none select-none z-[999]';
+      dmgEl.style.left = `${x}px`;
+      dmgEl.style.top = `${y - 40}px`;
+      dmgEl.style.fontFamily = "'Press Start 2P', monospace";
+      dmgEl.style.fontSize = '10px';
+      dmgEl.style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000';
+      dmgEl.innerText = `-${damage}`;
+      worldRef.current.appendChild(dmgEl);
+      dmgEl.animate([
+        { transform: 'translate(-50%, 0) scale(1)', opacity: 1 },
+        { transform: 'translate(-50%, -30px) scale(1.5)', opacity: 0 }
+      ], { duration: 800, easing: 'ease-out' });
+      setTimeout(() => { if (dmgEl.parentNode) dmgEl.parentNode.removeChild(dmgEl); }, 800);
+
+      // Cross Strike Effect (from reference image)
+      const crossStrike = document.createElement('div');
+      crossStrike.className = 'absolute pointer-events-none z-[999] flex items-center justify-center';
+      crossStrike.style.left = `${x}px`;
+      crossStrike.style.top = `${y - 20}px`;
+      crossStrike.style.width = '40px';
+      crossStrike.style.height = '40px';
+      crossStrike.style.marginLeft = '-20px';
+      crossStrike.style.marginTop = '-20px';
+      crossStrike.style.filter = 'drop-shadow(2px 2px 0 rgba(0,0,0,0.8))';
+
+      // Broken Circle - Top & Bottom arcs
+      const arc1 = document.createElement('div');
+      arc1.style.position = 'absolute';
+      arc1.style.width = '28px';
+      arc1.style.height = '28px';
+      arc1.style.left = '6px';
+      arc1.style.top = '6px';
+      arc1.style.borderRadius = '50%';
+      arc1.style.border = '4px solid transparent';
+      arc1.style.borderTopColor = '#ff7a00';
+      arc1.style.borderBottomColor = '#ff7a00';
+      crossStrike.appendChild(arc1);
+
+      // Broken Circle - Left & Right arcs
+      const arc2 = document.createElement('div');
+      arc2.style.position = 'absolute';
+      arc2.style.width = '28px';
+      arc2.style.height = '28px';
+      arc2.style.left = '6px';
+      arc2.style.top = '6px';
+      arc2.style.borderRadius = '50%';
+      arc2.style.border = '4px solid transparent';
+      arc2.style.borderLeftColor = '#ffea00';
+      arc2.style.borderRightColor = '#ffea00';
+      crossStrike.appendChild(arc2);
+
+      // Diagonal Spike 1 (Top-Left to Bottom-Right)
+      const spikeX1 = document.createElement('div');
+      spikeX1.style.position = 'absolute';
+      spikeX1.style.width = '40px';
+      spikeX1.style.height = '6px';
+      spikeX1.style.left = '0px';
+      spikeX1.style.top = '17px';
+      spikeX1.style.background = 'linear-gradient(90deg, #ff7a00 0%, #ffea00 30%, #ffea00 70%, #ff7a00 100%)';
+      spikeX1.style.transform = 'rotate(45deg)';
+      spikeX1.style.clipPath = 'polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%)';
+      crossStrike.appendChild(spikeX1);
+
+      // Diagonal Spike 2 (Top-Right to Bottom-Left)
+      const spikeX2 = document.createElement('div');
+      spikeX2.style.position = 'absolute';
+      spikeX2.style.width = '40px';
+      spikeX2.style.height = '6px';
+      spikeX2.style.left = '0px';
+      spikeX2.style.top = '17px';
+      spikeX2.style.background = 'linear-gradient(90deg, #ff7a00 0%, #ffea00 30%, #ffea00 70%, #ff7a00 100%)';
+      spikeX2.style.transform = 'rotate(-45deg)';
+      spikeX2.style.clipPath = 'polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%)';
+      crossStrike.appendChild(spikeX2);
+
+      // Vertical Spike
+      const spikeV = document.createElement('div');
+      spikeV.style.position = 'absolute';
+      spikeV.style.width = '4px';
+      spikeV.style.height = '48px';
+      spikeV.style.left = '18px';
+      spikeV.style.top = '-4px';
+      spikeV.style.background = 'linear-gradient(180deg, #ff7a00 0%, #ffea00 30%, #ffea00 70%, #ff7a00 100%)';
+      spikeV.style.clipPath = 'polygon(50% 0, 100% 10%, 100% 90%, 50% 100%, 0 90%, 0 10%)';
+      crossStrike.appendChild(spikeV);
+
+      worldRef.current.appendChild(crossStrike);
+
+      // Pop Animation
+      crossStrike.animate([
+        { transform: 'scale(0.3) rotate(-15deg)', opacity: 1 },
+        { transform: 'scale(1.2) rotate(15deg)', opacity: 0 }
+      ], { duration: 300, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' });
+
+      setTimeout(() => {
+        if (crossStrike.parentNode) crossStrike.parentNode.removeChild(crossStrike);
+      }, 300);
+    };
+
     let animationFrameId: number;
     let lastTime = performance.now();
 
@@ -422,7 +724,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
       // Cap deltaTime at 50ms to prevent huge jumps if tab is inactive
       const dt = Math.min(deltaTime, 50);
-      
+
       // Target speed was ~240 pixels per second (4 pixels at 60fps)
       const moveSpeedPixelsPerMs = 0.24;
       const currentMoveSpeed = moveSpeedPixelsPerMs * dt;
@@ -431,10 +733,13 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       let dx = 0;
       let dy = 0;
 
-      if (keysPressed.current['w'] || keysPressed.current['arrowup']) dy -= currentMoveSpeed;
-      if (keysPressed.current['s'] || keysPressed.current['arrowdown']) dy += currentMoveSpeed;
-      if (keysPressed.current['a'] || keysPressed.current['arrowleft']) dx -= currentMoveSpeed;
-      if (keysPressed.current['d'] || keysPressed.current['arrowright']) dx += currentMoveSpeed;
+      // Only allow movement if not dead
+      if (!isDeadRef.current) {
+        if (keysPressed.current['w'] || keysPressed.current['arrowup']) dy -= currentMoveSpeed;
+        if (keysPressed.current['s'] || keysPressed.current['arrowdown']) dy += currentMoveSpeed;
+        if (keysPressed.current['a'] || keysPressed.current['arrowleft']) dx -= currentMoveSpeed;
+        if (keysPressed.current['d'] || keysPressed.current['arrowright']) dx += currentMoveSpeed;
+      }
 
       if (dx !== 0 || dy !== 0) {
         moved = true;
@@ -470,7 +775,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             localPos.current.y = portal.destY;
             localPos.current.mapId = portal.destMapId;
             setCurrentMapId(portal.destMapId);
-            
+
             // Broadcast teleport so other clients move us immediately
             if (channelReadyRef.current && channelRef.current) {
               channelRef.current.send({
@@ -496,63 +801,63 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       // Update Cats
       catsRef.current.forEach(cat => {
         if (time > cat.nextMoveTime) {
-            if (cat.isWalking) {
-              cat.isWalking = false;
-              // Idle for exactly 10 seconds
-              cat.nextMoveTime = time + 10000;
-            } else {
-              // Pick a new target in the center of the map
-              cat.targetX = Math.max((MAP_WIDTH / 2) - 400, Math.min((MAP_WIDTH / 2) + 400, cat.x + (Math.random() - 0.5) * 300));
-              cat.targetY = Math.max((MAP_HEIGHT / 2) - 400, Math.min((MAP_HEIGHT / 2) + 400, cat.y + (Math.random() - 0.5) * 300));
-              cat.isWalking = true;
-              cat.flipX = cat.targetX < cat.x;
-              // Walk for 3 to 5 seconds
-              cat.nextMoveTime = time + 3000 + Math.random() * 2000;
-            }
-          }
-
           if (cat.isWalking) {
-            const cdx = cat.targetX - cat.x;
-            const cdy = cat.targetY - cat.y;
-            const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
-            
-            if (cdist > 1) {
-              cat.x += (cdx / cdist) * cat.speed;
-              cat.y += (cdy / cdist) * cat.speed;
-            } else {
-              // Reached target early! Start idling.
-              cat.isWalking = false;
-              cat.nextMoveTime = time + 10000;
-            }
-
-            const el = document.getElementById(cat.id);
-            if (el) {
-              el.style.transform = `translate3d(${cat.x}px, ${cat.y}px, 0) translate(-50%, -100%)`;
-              el.style.zIndex = Math.floor(cat.y).toString();
-              
-              const img = el.querySelector('img');
-              if (img) {
-                img.style.transition = 'none';
-                img.style.transform = `scale(${cat.flipX ? -0.85 : 0.85}, 0.85)`;
-                if (img.getAttribute('src') !== CAT_WALK) {
-                  img.setAttribute('src', CAT_WALK);
-                }
-              }
-            }
+            cat.isWalking = false;
+            // Idle for exactly 10 seconds
+            cat.nextMoveTime = time + 10000;
           } else {
-            const el = document.getElementById(cat.id);
-            if (el) {
-              const img = el.querySelector('img');
-              if (img) {
-                img.style.transition = 'none';
-                img.style.transform = `scale(${cat.flipX ? -1 : 1}, 1)`;
-                if (img.getAttribute('src') !== CAT_IDLE) {
-                  img.setAttribute('src', CAT_IDLE);
-                }
+            // Pick a new target in the center of the map
+            cat.targetX = Math.max((MAP_WIDTH / 2) - 400, Math.min((MAP_WIDTH / 2) + 400, cat.x + (Math.random() - 0.5) * 300));
+            cat.targetY = Math.max((MAP_HEIGHT / 2) - 400, Math.min((MAP_HEIGHT / 2) + 400, cat.y + (Math.random() - 0.5) * 300));
+            cat.isWalking = true;
+            cat.flipX = cat.targetX < cat.x;
+            // Walk for 3 to 5 seconds
+            cat.nextMoveTime = time + 3000 + Math.random() * 2000;
+          }
+        }
+
+        if (cat.isWalking) {
+          const cdx = cat.targetX - cat.x;
+          const cdy = cat.targetY - cat.y;
+          const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+
+          if (cdist > 1) {
+            cat.x += (cdx / cdist) * cat.speed;
+            cat.y += (cdy / cdist) * cat.speed;
+          } else {
+            // Reached target early! Start idling.
+            cat.isWalking = false;
+            cat.nextMoveTime = time + 10000;
+          }
+
+          const el = document.getElementById(cat.id);
+          if (el) {
+            el.style.transform = `translate3d(${cat.x}px, ${cat.y}px, 0) translate(-50%, -100%)`;
+            el.style.zIndex = Math.floor(cat.y).toString();
+
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${cat.flipX ? -0.85 : 0.85}, 0.85)`;
+              if (img.getAttribute('src') !== CAT_WALK) {
+                img.setAttribute('src', CAT_WALK);
               }
             }
           }
-        });
+        } else {
+          const el = document.getElementById(cat.id);
+          if (el) {
+            const img = el.querySelector('img');
+            if (img) {
+              img.style.transition = 'none';
+              img.style.transform = `scale(${cat.flipX ? -1 : 1}, 1)`;
+              if (img.getAttribute('src') !== CAT_IDLE) {
+                img.setAttribute('src', CAT_IDLE);
+              }
+            }
+          }
+        }
+      });
 
       // Update Foxes
       foxesRef.current.forEach(fox => {
@@ -576,7 +881,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const fdx = fox.targetX - fox.x;
           const fdy = fox.targetY - fox.y;
           const fdist = Math.sqrt(fdx * fdx + fdy * fdy);
-          
+
           if (fdist > 1) {
             fox.x += (fdx / fdist) * fox.speed;
             fox.y += (fdy / fdist) * fox.speed;
@@ -589,7 +894,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           if (el) {
             el.style.transform = `translate3d(${fox.x}px, ${fox.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(fox.y).toString();
-            
+
             const img = el.querySelector('img');
             if (img) {
               img.style.transition = 'none';
@@ -636,7 +941,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const ddx = dog.targetX - dog.x;
           const ddy = dog.targetY - dog.y;
           const ddist = Math.sqrt(ddx * ddx + ddy * ddy);
-          
+
           if (ddist > 1) {
             dog.x += (ddx / ddist) * dog.speed;
             dog.y += (ddy / ddist) * dog.speed;
@@ -649,7 +954,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           if (el) {
             el.style.transform = `translate3d(${dog.x}px, ${dog.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(dog.y).toString();
-            
+
             const img = el.querySelector('img');
             if (img) {
               img.style.transition = 'none';
@@ -696,7 +1001,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const mdx = mouse.targetX - mouse.x;
           const mdy = mouse.targetY - mouse.y;
           const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-          
+
           if (mdist > 1) {
             mouse.x += (mdx / mdist) * mouse.speed;
             mouse.y += (mdy / mdist) * mouse.speed;
@@ -709,7 +1014,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           if (el) {
             el.style.transform = `translate3d(${mouse.x}px, ${mouse.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(mouse.y).toString();
-            
+
             const img = el.querySelector('img');
             if (img) {
               img.style.transition = 'none';
@@ -756,7 +1061,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const cdx = chicken.targetX - chicken.x;
           const cdy = chicken.targetY - chicken.y;
           const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
-          
+
           if (cdist > 1) {
             chicken.x += (cdx / cdist) * chicken.speed;
             chicken.y += (cdy / cdist) * chicken.speed;
@@ -769,7 +1074,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           if (el) {
             el.style.transform = `translate3d(${chicken.x}px, ${chicken.y}px, 0) translate(-50%, -100%)`;
             el.style.zIndex = Math.floor(chicken.y).toString();
-            
+
             const img = el.querySelector('img');
             if (img) {
               img.style.transition = 'none';
@@ -805,15 +1110,13 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         minimapPlayerRef.current.style.top = `${(localPos.current.y / MAP_HEIGHT) * 100}%`;
       }
 
-      if (moved !== localPos.current.isWalking || localPos.current.flipX !== lastBroadcast.current.flipX) {
-        setLocalSpriteState(prev => {
-          if (prev.isWalking !== moved || prev.flipX !== localPos.current.flipX) {
-            return { flipX: localPos.current.flipX, isWalking: moved };
-          }
-          return prev;
-        });
+      // Update local visual state instantly without waiting for network broadcasts
+      if (moved !== lastRenderedState.current.isWalking || localPos.current.flipX !== lastRenderedState.current.flipX) {
+        lastRenderedState.current.isWalking = moved;
+        lastRenderedState.current.flipX = localPos.current.flipX;
+        setLocalSpriteState({ flipX: localPos.current.flipX, isWalking: moved });
       }
-      
+
       localPos.current.isWalking = moved;
 
       if (worldRef.current && containerRef.current) {
@@ -855,6 +1158,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           }
           lastBroadcast.current.time = now;
           lastBroadcast.current.wasWalking = true;
+          lastBroadcast.current.flipX = localPos.current.flipX;
         }
       } else {
         if (lastBroadcast.current.wasWalking) {
@@ -894,7 +1198,194 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         }
       }
 
-      animationFrameId = requestAnimationFrame(gameLoop);
+
+      // --- MAP PETS UPDATE ---
+      const petNow = Date.now();
+      const petDt = 0.016; // approx 60fps delta
+
+      petsRef.current.forEach((pet) => {
+        let { x, y, vx, vy, speed, nextActionTime, targetX, targetY, isWalking, flipX } = pet;
+
+        let isChasing = false;
+
+        if (pet.type === 'dog' || pet.type === 'fox' || pet.type === 'cat' || pet.type === 'snake') {
+          let closestPlayerId = isDeadRef.current ? "" : "local";
+          let closestPlayerX = localPos.current.x;
+          let closestPlayerY = localPos.current.y;
+          let minDist = isDeadRef.current ? Infinity : Math.hypot(closestPlayerX - x, closestPlayerY - y);
+
+          Object.keys(latestPositions.current).forEach((playerId) => {
+            const p = latestPositions.current[playerId] as any;
+            const isRemoteDead = playersHealth.current[playerId]?.hp === 0;
+
+            // Only chase if they are on the same map (assuming amazon since pets are here) and NOT dead
+            if ((p.mapId === "amazon" || !p.mapId) && !isRemoteDead) {
+              const dist = Math.hypot(p.x - x, p.y - y);
+              if (dist < minDist) {
+                minDist = dist;
+                closestPlayerX = p.x;
+                closestPlayerY = p.y;
+                closestPlayerId = playerId;
+              }
+            }
+          });
+
+          if (minDist < 250) { // Chase range
+            isChasing = true;
+            targetX = closestPlayerX;
+            targetY = closestPlayerY;
+            isWalking = true;
+            nextActionTime = petNow + 2000; // Delay normal actions while chasing
+
+            // Hit detection
+            if (minDist < 30) {
+              let damage = 1;
+              if (pet.type === 'dog') damage = 3;
+              if (pet.type === 'fox') damage = 2;
+              if (pet.type === 'snake') damage = 1;
+
+              if (!pet.lastHitTimes) pet.lastHitTimes = {};
+              const lastHit = pet.lastHitTimes[closestPlayerId] || 0;
+
+              // Each pet has its OWN 1 second cooldown against a specific player
+              if (petNow - lastHit > 1000) {
+                pet.lastHitTimes[closestPlayerId] = petNow;
+
+                // Apply slight random offset to prevent perfect overlapping if multiple pets hit exactly at the same coordinate
+                const offsetX = (Math.random() - 0.5) * 10;
+                const offsetY = (Math.random() - 0.5) * 10;
+                showHitEffect(x + offsetX, y + offsetY, damage, pet.type);
+
+                if (closestPlayerId === "local") {
+                  localHealth.current = Math.max(0, localHealth.current - damage);
+
+                  if (localHealth.current === 0 && !isDeadRef.current) {
+                    isDeadRef.current = true;
+                    if (playerRef.current) {
+                      playerRef.current.style.transition = 'transform 0.5s ease-in-out';
+                      // Fall flat with head on the right and feet on the left, keeping their map position
+                      playerRef.current.style.transform = `translate3d(${localPos.current.x}px, ${localPos.current.y}px, 0) translate(-50%, -100%) rotate(90deg) translate(10px, 30px)`;
+
+                      setTimeout(() => {
+                        setTimeout(() => {
+                          setShowGameOver(true);
+                        }, 1200);
+                      }, 250);
+                    } else {
+                      setShowGameOver(true);
+                    }
+                  }
+
+                  if (playerHealthBarRef.current) {
+                    const hpPercent = (localHealth.current / 100) * 100;
+                    playerHealthBarRef.current.style.width = `${hpPercent}%`;
+
+                    if (hpPercent > 50) {
+                      playerHealthBarRef.current.style.backgroundColor = '#22c55e'; // green
+                    } else if (hpPercent > 25) {
+                      playerHealthBarRef.current.style.backgroundColor = '#eab308'; // yellow
+                    } else {
+                      playerHealthBarRef.current.style.backgroundColor = '#ef4444'; // red
+                    }
+                  }
+
+                  if (channelReadyRef.current && channelRef.current) {
+                    channelRef.current.send({
+                      type: 'broadcast',
+                      event: 'health_update',
+                      payload: {
+                        user_id: sessionInfo.id,
+                        health: localHealth.current,
+                        isDead: isDeadRef.current
+                      }
+                    });
+                  }
+                } else {
+                  // Remote player hit - do not calculate damage locally.
+                  // Only visually show hit effect. We wait for their client to broadcast health_update.
+                }
+              }
+            }
+          }
+
+        }
+
+        if (!isChasing && petNow > nextActionTime) {
+          const action = Math.random();
+          if (action < 0.4) {
+            // walk left
+            targetX = Math.max(0, x - 100 - Math.random() * 300);
+            targetY = y;
+            nextActionTime = petNow + pet.walkDuration;
+            isWalking = true;
+          } else if (action < 0.8) {
+            // walk right
+            targetX = Math.min(MAP_WIDTH, x + 100 + Math.random() * 300);
+            targetY = y;
+            nextActionTime = petNow + pet.walkDuration;
+            isWalking = true;
+          } else {
+            // stop
+            targetX = x;
+            targetY = y;
+            nextActionTime = petNow + pet.idleDuration;
+            isWalking = false;
+          }
+        }
+
+        if (isWalking && targetX !== undefined) {
+          const tY = targetY !== undefined ? targetY : y;
+          const dx = targetX - x;
+          const dy = tY - y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist > 30) { // Stop slightly before hitting exact center
+            const currentSpeed = speed;
+            vx = (dx / dist) * Math.min(currentSpeed, dist);
+            vy = (dy / dist) * Math.min(currentSpeed, dist);
+            flipX = vx < 0;
+            x += vx * petDt;
+            y += vy * petDt;
+
+            // Clamp y so they don't walk out of bounds or too high up
+            y = Math.min(MAP_HEIGHT, Math.max(MAP_HEIGHT * 0.35, y));
+          } else {
+            isWalking = isChasing;
+          }
+        }
+
+        // Update physics
+        pet.x = x;
+        pet.y = y;
+        pet.vx = vx;
+        pet.flipX = flipX;
+        pet.isWalking = isWalking;
+        pet.targetX = targetX;
+        pet.nextActionTime = nextActionTime;
+
+        // Update DOM directly
+        const petEl = document.getElementById(pet.id);
+        if (petEl) {
+          petEl.style.transform = `translate3d(${x - 20}px, ${y - 26}px, 0)`;
+        }
+        const petImg = document.getElementById(`${pet.id}-img`) as HTMLImageElement;
+        if (petImg) {
+          petImg.style.transform = `scaleX(${flipX ? -1 : 1}) scale(${pet.scale})`;
+          const sprites = {
+            fox: { walk: FOX_WALK, idle: FOX_IDLE },
+            dog: { walk: DOG_WALK, idle: DOG_IDLE },
+            turtle: { walk: "/pets/turtle/green_walk_8fps.gif", idle: "/pets/turtle/green_idle_8fps.gif" },
+            snake: { walk: "/pets/snake/green_walk_8fps.gif", idle: "/pets/snake/green_idle_8fps.gif" }
+          };
+          const sprite = isWalking ? sprites[pet.type as keyof typeof sprites].walk : sprites[pet.type as keyof typeof sprites].idle;
+          if (petImg.getAttribute('src') !== sprite) {
+            petImg.src = sprite;
+          }
+        }
+      });
+      // --- END MAP PETS UPDATE ---
+
+      requestAnimationFrame(gameLoop);
     };
 
     animationFrameId = requestAnimationFrame(gameLoop);
@@ -929,17 +1420,17 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
   if (!isPlaying) {
     return (
-      <div 
-        className="w-full h-full flex flex-col items-center justify-center bg-transparent text-center p-6" 
+      <div
+        className="w-full h-full flex flex-col items-center justify-center bg-transparent text-center p-6"
         style={{ fontFamily: "'Press Start 2P', monospace" }}
       >
-        <h2 
-          className="text-lg md:text-xl font-bold uppercase mb-4 text-foreground/80" 
+        <h2
+          className="text-lg md:text-xl font-bold uppercase mb-4 text-foreground/80"
           style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.1)" }}
         >
           Join the World
         </h2>
-        
+
         <p className="text-[9px] md:text-[10px] text-foreground/60 mb-10 max-w-[80%] leading-loose">
           step into the multiplayer pixel world and hang out with the global chat.
         </p>
@@ -1029,7 +1520,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           >
             {/* Outer Dark Green Blocky Ring */}
             <div className="absolute w-full h-full bg-[#166534]" style={{ clipPath: 'polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%)' }} />
-            
+
             {/* Spinning Blocky Cross / Swirl */}
             <div className="absolute w-[80%] h-[80%] animate-[spin_0.8s_steps(4)_infinite]">
               <div className="absolute top-0 left-[20%] w-[60%] h-[20%] bg-[#22c55e]" />
@@ -1045,7 +1536,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               <div className="absolute left-0 top-[20%] w-[20%] h-[60%] bg-[#39ff14]" />
               <div className="absolute right-0 top-[20%] w-[20%] h-[60%] bg-[#39ff14]" />
             </div>
-            
+
             {/* Core */}
             <div className="absolute w-[30%] h-[30%] bg-[#ccff00] animate-pulse" style={{ clipPath: 'polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%)' }} />
 
@@ -1054,7 +1545,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             <div className="absolute w-[15%] h-[15%] bg-[#39ff14] animate-[bounce_1.2s_steps(2)_infinite] bottom-[10%] right-[10%]" />
 
             <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] uppercase text-white font-bold pointer-events-none z-10" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: "2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000" }}>
-              To {portal.destMapId}
+              To {portal.destMapId === 'tech' ? 'BGC' : portal.destMapId === 'space' ? 'Space' : portal.destMapId}
             </div>
           </div>
         ))}
@@ -1064,7 +1555,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         {/* Cats */}
         {catsRef.current.map((cat) => (
-          <div 
+          <div
             id={cat.id}
             key={cat.id}
             className="absolute flex flex-col items-center pointer-events-none"
@@ -1072,9 +1563,9 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               left: 0, top: 0, zIndex: Math.floor(cat.y), transform: `translate3d(${cat.x}px, ${cat.y}px, 0) translate(-50%, -100%)`
             }}
           >
-            <img 
-              src={CAT_IDLE} 
-              alt="Cat" 
+            <img
+              src={CAT_IDLE}
+              alt="Cat"
               style={{
                 width: '49px',
                 height: '40px',
@@ -1089,7 +1580,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         {/* Foxes */}
         {foxesRef.current.map((fox) => (
-          <div 
+          <div
             id={fox.id}
             key={fox.id}
             className="absolute flex flex-col items-center pointer-events-none"
@@ -1097,9 +1588,9 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               left: 0, top: 0, zIndex: Math.floor(fox.y), transform: `translate3d(${fox.x}px, ${fox.y}px, 0) translate(-50%, -100%)`
             }}
           >
-            <img 
-              src={FOX_IDLE} 
-              alt="Fox" 
+            <img
+              src={FOX_IDLE}
+              alt="Fox"
               style={{
                 width: '49px',
                 height: '40px',
@@ -1114,7 +1605,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         {/* Dogs */}
         {dogsRef.current.map((dog) => (
-          <div 
+          <div
             id={dog.id}
             key={dog.id}
             className="absolute flex flex-col items-center pointer-events-none"
@@ -1122,9 +1613,9 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               left: 0, top: 0, zIndex: Math.floor(dog.y), transform: `translate3d(${dog.x}px, ${dog.y}px, 0) translate(-50%, -100%)`
             }}
           >
-            <img 
-              src={DOG_IDLE} 
-              alt="Dog" 
+            <img
+              src={DOG_IDLE}
+              alt="Dog"
               style={{
                 width: '51px',
                 height: '40px',
@@ -1139,7 +1630,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         {/* Mice */}
         {miceRef.current.map((mouse) => (
-          <div 
+          <div
             id={mouse.id}
             key={mouse.id}
             className="absolute flex flex-col items-center pointer-events-none"
@@ -1147,9 +1638,9 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               left: 0, top: 0, zIndex: Math.floor(mouse.y), transform: `translate3d(${mouse.x}px, ${mouse.y}px, 0) translate(-50%, -100%)`
             }}
           >
-            <img 
-              src={MOUSE_IDLE} 
-              alt="Mouse" 
+            <img
+              src={MOUSE_IDLE}
+              alt="Mouse"
               style={{
                 width: '57px',
                 height: '40px',
@@ -1164,7 +1655,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
 
         {/* Chickens */}
         {chickensRef.current.map((chicken) => (
-          <div 
+          <div
             id={chicken.id}
             key={chicken.id}
             className="absolute flex flex-col items-center pointer-events-none"
@@ -1172,9 +1663,9 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               left: 0, top: 0, zIndex: Math.floor(chicken.y), transform: `translate3d(${chicken.x}px, ${chicken.y}px, 0) translate(-50%, -100%)`
             }}
           >
-            <img 
-              src={CHICKEN_IDLE} 
-              alt="Chicken" 
+            <img
+              src={CHICKEN_IDLE}
+              alt="Chicken"
               style={{
                 width: '44px',
                 height: '40px',
@@ -1184,6 +1675,35 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                 transition: 'none'
               }}
             />
+          </div>
+        ))}
+
+
+        {/* Map Pets */}
+        {mapPets.map((pet) => (
+          <div
+            id={pet.id}
+            key={pet.id}
+            className="absolute flex flex-col items-center z-10 pointer-events-none"
+            style={{
+              left: 0,
+              top: 0,
+              transform: `translate3d(${pet.x - 20}px, ${pet.y - 26}px, 0)`,
+              willChange: 'transform'
+            }}
+          >
+            <div className="relative flex flex-col items-center select-none">
+              <img
+                id={`${pet.id}-img`}
+                src={pet.isWalking ? (pet.type === 'fox' ? FOX_WALK : pet.type === 'dog' ? DOG_WALK : pet.type === 'turtle' ? "/pets/turtle/green_walk_8fps.gif" : "/pets/snake/green_walk_8fps.gif") : (pet.type === 'fox' ? FOX_IDLE : pet.type === 'dog' ? DOG_IDLE : pet.type === 'turtle' ? "/pets/turtle/green_idle_8fps.gif" : "/pets/snake/green_idle_8fps.gif")}
+                alt={pet.type}
+                className="w-10 h-10 pixelated pointer-events-none drop-shadow-md"
+                style={{
+                  transform: `scaleX(${pet.flipX ? -1 : 1}) scale(${pet.scale})`,
+                  willChange: 'transform'
+                }}
+              />
+            </div>
           </div>
         ))}
 
@@ -1230,8 +1750,9 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           style={{
             left: 0,
             top: 0,
-            transform: `translate3d(${localPos.current.x}px, ${localPos.current.y}px, 0) translate(-50%, -100%)`,
-            willChange: 'transform'
+            transform: `translate3d(${localPos.current.x}px, ${localPos.current.y}px, 0) translate(-50%, -100%) ${isDeadRef.current ? 'rotate(90deg) translate(10px, 30px)' : ''}`,
+            willChange: 'transform',
+            transition: isDeadRef.current ? 'transform 0.5s ease-in-out' : 'none'
           }}
         >
           {getLatestMessage(sessionInfo.id) && (
@@ -1243,19 +1764,19 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           <span className="text-[10px] font-mono text-green-300 bg-black/60 px-1.5 py-0.5 rounded shadow-sm mb-1 whitespace-nowrap">
             {sessionInfo.username}
           </span>
-          <PlayerSprite username={sessionInfo.username} flipX={localSpriteState.flipX} isWalking={localSpriteState.isWalking} />
+          <PlayerSprite username={sessionInfo.username} flipX={localSpriteState.flipX} isWalking={localSpriteState.isWalking} isDead={localHealth.current === 0} />
         </div>
       </div>
 
       {/* Minimap Overlay */}
-      <div className="absolute top-24 left-[5%] md:left-[15%] w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-transparent border border-white/50 rounded-md z-30 overflow-hidden pointer-events-none transform-gpu">
-        <div className="w-full h-full relative">
+      <div className="absolute top-24 left-[5%] md:left-[15%] flex flex-col gap-1 z-30 pointer-events-none transform-gpu w-[80px] md:w-[100px]">
+        <div className="w-full h-[80px] md:h-[100px] bg-transparent border border-white/50 rounded-md relative overflow-hidden">
           {/* Remote Players on Minimap */}
           {otherPlayers.map(p => {
             const currentX = latestPositions.current[p.user_id]?.x ?? p.x;
             const currentY = latestPositions.current[p.user_id]?.y ?? p.y;
             return (
-              <div 
+              <div
                 id={`minimap-${p.user_id}`}
                 key={`minimap-${p.user_id}`}
                 className="absolute w-1.5 h-1.5 bg-red-500 rounded-full shadow-sm transition-all duration-[75ms] ease-linear"
@@ -1268,7 +1789,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             );
           })}
           {/* Local Player on Minimap */}
-          <div 
+          <div
             ref={minimapPlayerRef}
             className="absolute w-2 h-2 bg-green-400 rounded-full border border-white/50 shadow-sm z-10 transition-all duration-75 ease-linear"
             style={{
@@ -1276,6 +1797,15 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
               top: `${(localPos.current.y / MAP_HEIGHT) * 100}%`,
               transform: 'translate(-50%, -50%)'
             }}
+          />
+        </div>
+
+        {/* Local Health Bar */}
+        <div className="w-full h-1.5 bg-black/60 border-[1px] border-black overflow-hidden pointer-events-none">
+          <div
+            ref={playerHealthBarRef}
+            className="h-full bg-[#22c55e] transition-all duration-200"
+            style={{ width: '100%' }}
           />
         </div>
       </div>
@@ -1328,6 +1858,34 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       </div>
 
       {/* Global Chat UI Layer */}
+
+      {/* Game Over Screen */}
+      {showGameOver && (
+        <div
+          className="fixed inset-0 z-[9999] bg-transparent flex flex-col items-center justify-center pointer-events-auto"
+          style={{ animation: 'fadeInGameOver 1.5s ease-in forwards' }}
+        >
+          <style>{`
+            @keyframes fadeInGameOver {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
+          <h1
+            className="text-6xl md:text-8xl text-[#888888] font-bold mb-8 tracking-widest drop-shadow-[4px_4px_0px_rgba(0,0,0,0.8)] text-center leading-snug"
+            style={{ fontFamily: 'var(--font-press-start-2p), "Press Start 2P", monospace', textShadow: '4px 4px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000, 2px 2px 0px #000' }}
+          >
+            GAME<br />OVER
+          </h1>
+          <button
+            onClick={handleRespawn}
+            className="px-8 py-4 bg-transparent text-white hover:scale-105 hover:text-gray-300 transition-all text-xl md:text-2xl uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+            style={{ fontFamily: 'var(--font-press-start-2p), "Press Start 2P", monospace', textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000' }}
+          >
+            START AGAIN
+          </button>
+        </div>
+      )}
     </div>
   );
 }
