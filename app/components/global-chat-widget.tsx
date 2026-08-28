@@ -283,6 +283,9 @@ export default function GlobalChatWidget() {
       .on("broadcast", { event: "move" }, (payload) => {
         window.dispatchEvent(new CustomEvent('player-move', { detail: payload.payload }));
       })
+      .on("broadcast", { event: "health_update" }, (payload) => {
+        window.dispatchEvent(new CustomEvent('player-health', { detail: payload.payload }));
+      })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           channelReadyRef.current = true;
@@ -296,7 +299,29 @@ export default function GlobalChatWidget() {
         }
       });
 
+    // Keep-alive heartbeat and tab visibility handler for Safari
+    const trackPresence = () => {
+      if (channelReadyRef.current && presenceChannel) {
+        presenceChannel.track({
+          user_id: sessionInfo.id,
+          username: sessionInfo.username,
+          ...sharedPresenceRef.current
+        });
+      }
+    };
+    
+    const heartbeat = setInterval(trackPresence, 15000); // 15s keepalive
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        trackPresence();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
+      clearInterval(heartbeat);
+      document.removeEventListener('visibilitychange', handleVisibility);
       channelReadyRef.current = false;
       supabase.removeChannel(presenceChannel);
     };
