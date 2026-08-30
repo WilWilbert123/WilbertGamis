@@ -59,6 +59,7 @@ interface GlobalChatGameProps {
   sharedPresenceRef: React.MutableRefObject<any>;
   onlinePlayers: Player[];
   messages?: any[];
+  isOpen?: boolean;
 }
 
 const getPlayerColor = (username: string) => {
