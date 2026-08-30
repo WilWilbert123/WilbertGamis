@@ -299,28 +299,20 @@ export default function GlobalChatWidget() {
         }
       });
 
-    // Keep-alive heartbeat and tab visibility handler for Safari
-    const trackPresence = () => {
-      if (channelReadyRef.current && presenceChannel) {
-        presenceChannel.track({
-          user_id: sessionInfo.id,
-          username: sessionInfo.username,
-          ...sharedPresenceRef.current
-        });
-      }
-    };
-    
-    const heartbeat = setInterval(trackPresence, 15000); // 15s keepalive
-
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        trackPresence();
+        if (channelReadyRef.current && presenceChannel) {
+          presenceChannel.track({
+            user_id: sessionInfo.id,
+            username: sessionInfo.username,
+            ...sharedPresenceRef.current
+          });
+        }
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
-      clearInterval(heartbeat);
       document.removeEventListener('visibilitychange', handleVisibility);
       channelReadyRef.current = false;
       supabase.removeChannel(presenceChannel);
@@ -664,42 +656,40 @@ export default function GlobalChatWidget() {
       </div>
 
       {/* Game Canvas */}
-      <AnimatePresence>
-        {isOpen && isSetupComplete && (
-          <div className="fixed top-0 left-0 w-full h-[50vh] md:w-auto md:h-auto md:-translate-x-0 md:top-auto md:left-auto md:bottom-4 md:right-4 z-50 pointer-events-none">
-            <style>
-              {`
-                @media (min-width: 768px) {
-                  .desktop-game-mask {
-                    -webkit-mask-image: radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-                    -webkit-mask-composite: source-in;
-                    mask-image: radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-                    mask-composite: intersect;
-                  }
+      {isSetupComplete && (
+        <div className="fixed top-0 left-0 w-full h-[50vh] md:w-auto md:h-auto md:-translate-x-0 md:top-auto md:left-auto md:bottom-4 md:right-4 z-50 pointer-events-none">
+          <style>
+            {`
+              @media (min-width: 768px) {
+                .desktop-game-mask {
+                  -webkit-mask-image: radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+                  -webkit-mask-composite: source-in;
+                  mask-image: radial-gradient(closest-side at 50% 50%, black 85%, transparent 100%), linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+                  mask-composite: intersect;
                 }
-              `}
-            </style>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-              className="w-full h-full md:w-[650px] md:h-[650px] pointer-events-auto overflow-hidden bg-white rounded-none md:rounded-[100px] shadow-none md:shadow-[0_0_30px_10px_rgba(255,255,255,0.8)] md:dark:shadow-[0_0_30px_10px_rgba(0,0,0,0.8)] dark:bg-black border-none"
-            >
-              <div className="w-full h-full desktop-game-mask">
-                <GlobalChatGame
-                  sessionInfo={sessionInfo}
-                  channelRef={channelRef}
-                  channelReadyRef={channelReadyRef}
-                  sharedPresenceRef={sharedPresenceRef}
-                  onlinePlayers={onlinePlayers}
-                  messages={messages}
-                />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              }
+            `}
+          </style>
+          <motion.div
+            initial={false}
+            animate={isOpen ? { opacity: 1, scale: 1, filter: "blur(0px)" } : { opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className={`w-full h-full md:w-[650px] md:h-[650px] ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'} overflow-hidden bg-white rounded-none md:rounded-[100px] shadow-none md:shadow-[0_0_30px_10px_rgba(255,255,255,0.8)] md:dark:shadow-[0_0_30px_10px_rgba(0,0,0,0.8)] dark:bg-black border-none`}
+          >
+            <div className="w-full h-full desktop-game-mask">
+              <GlobalChatGame
+                sessionInfo={sessionInfo}
+                channelRef={channelRef}
+                channelReadyRef={channelReadyRef}
+                sharedPresenceRef={sharedPresenceRef}
+                onlinePlayers={onlinePlayers}
+                messages={messages}
+                isOpen={isOpen}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }
