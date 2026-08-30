@@ -1180,22 +1180,26 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           }
 
           lastBroadcast.current.wasWalking = false;
-
-          // And update presence track for late joiners (Debounced to prevent spam)
-          if (idleTrackTimeout.current) clearTimeout(idleTrackTimeout.current);
-          idleTrackTimeout.current = setTimeout(() => {
-            sharedPresenceRef.current.x = localPos.current.x;
-            sharedPresenceRef.current.y = localPos.current.y;
-            sharedPresenceRef.current.flipX = localPos.current.flipX;
-            sharedPresenceRef.current.isWalking = false;
-            sharedPresenceRef.current.mapId = localPos.current.mapId;
-
-            channelRef.current?.track({
-              user_id: sessionInfo.id,
-              username: sessionInfo.username,
-              ...sharedPresenceRef.current
-            });
-          }, 1000);
+          lastBroadcast.current.time = now;
+        } else {
+          // Periodic idle broadcast every 10 seconds to keep connection alive and update late joiners
+          if (now - lastBroadcast.current.time > 10000) {
+            if (channelReadyRef.current && channelRef.current) {
+              channelRef.current.send({
+                type: 'broadcast',
+                event: 'move',
+                payload: {
+                  user_id: sessionInfo.id,
+                  x: localPos.current.x,
+                  y: localPos.current.y,
+                  flipX: localPos.current.flipX,
+                  isWalking: false,
+                  mapId: localPos.current.mapId
+                }
+              });
+            }
+            lastBroadcast.current.time = now;
+          }
         }
       }
 
