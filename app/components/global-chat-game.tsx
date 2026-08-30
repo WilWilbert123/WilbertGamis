@@ -52,6 +52,95 @@ const PET_SPEEDS: Record<string, number> = {
   snake: 30
 };
 
+function VirtualJoystick({ onMove }: { onMove: (x: number, y: number) => void }) {
+  const baseRef = useRef<HTMLDivElement>(null);
+  const stickRef = useRef<HTMLDivElement>(null);
+  const touchId = useRef<number | null>(null);
+
+  const updateJoystick = useCallback((clientX: number, clientY: number) => {
+    if (!baseRef.current || !stickRef.current) return;
+    const rect = baseRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const maxRadius = rect.width / 2;
+
+    let dx = clientX - centerX;
+    let dy = clientY - centerY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > maxRadius) {
+      dx = (dx / distance) * maxRadius;
+      dy = (dy / distance) * maxRadius;
+    }
+
+    stickRef.current.style.transition = 'none';
+    stickRef.current.style.transform = `translate(${dx}px, ${dy}px)`;
+    
+    // Normalize to -1.0 to 1.0
+    const normX = dx / maxRadius;
+    const normY = dy / maxRadius;
+    
+    if (distance > 10) {
+      onMove(normX, normY);
+    } else {
+      onMove(0, 0);
+    }
+  }, [onMove]);
+
+  const resetJoystick = useCallback(() => {
+    if (stickRef.current) {
+      stickRef.current.style.transition = 'transform 0.2s ease-out';
+      stickRef.current.style.transform = `translate(0px, 0px)`;
+    }
+    onMove(0, 0);
+  }, [onMove]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Only track the first touch that hits the joystick
+    if (touchId.current !== null) return;
+    const touch = e.changedTouches[0];
+    touchId.current = touch.identifier;
+    updateJoystick(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchId.current === null) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId.current) {
+        updateJoystick(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+        break;
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchId.current === null) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId.current) {
+        touchId.current = null;
+        resetJoystick();
+        break;
+      }
+    }
+  };
+
+  return (
+    <div
+      ref={baseRef}
+      className="w-28 h-28 bg-black/40 border border-white/20 rounded-full flex items-center justify-center touch-none backdrop-blur-sm pointer-events-auto"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
+      <div
+        ref={stickRef}
+        className="w-12 h-12 bg-white/50 rounded-full shadow-lg border border-white/30"
+      />
+    </div>
+  );
+}
+
 interface GlobalChatGameProps {
   sessionInfo: { id: string; username: string };
   channelRef: React.MutableRefObject<any>;
@@ -434,6 +523,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
   const playersHealth = useRef<Record<string, { hp: number, lastHitTime: number }>>({});
   const minimapPlayerRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
+  const joystickVector = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const idleTrackTimeout = useRef<NodeJS.Timeout | null>(null);
   const latestPositions = useRef<Record<string, { x: number, y: number, flipX: boolean, isWalking: boolean, mapId?: string }>>({});
@@ -740,6 +830,11 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         if (keysPressed.current['s'] || keysPressed.current['arrowdown']) dy += currentMoveSpeed;
         if (keysPressed.current['a'] || keysPressed.current['arrowleft']) dx -= currentMoveSpeed;
         if (keysPressed.current['d'] || keysPressed.current['arrowright']) dx += currentMoveSpeed;
+
+        if (joystickVector.current.x !== 0 || joystickVector.current.y !== 0) {
+          dx += joystickVector.current.x * currentMoveSpeed;
+          dy += joystickVector.current.y * currentMoveSpeed;
+        }
       }
 
       if (dx !== 0 || dy !== 0) {
@@ -1822,46 +1917,14 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
         WASD to move
       </div>
 
-      {/* Mobile Touch D-Pad */}
-      <div className="absolute bottom-6 left-6 grid grid-cols-3 gap-2 md:hidden z-30 opacity-60">
-        <div />
-        <button
-          onPointerDown={(e) => { e.preventDefault(); keysPressed.current['w'] = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keysPressed.current['w'] = false; }}
-          onPointerLeave={(e) => { e.preventDefault(); keysPressed.current['w'] = false; }}
-          onContextMenu={(e) => e.preventDefault()}
-          className="w-12 h-12 bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10 active:bg-white/20 touch-none"
-        >
-          <ArrowUp size={20} />
-        </button>
-        <div />
-        <button
-          onPointerDown={(e) => { e.preventDefault(); keysPressed.current['a'] = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keysPressed.current['a'] = false; }}
-          onPointerLeave={(e) => { e.preventDefault(); keysPressed.current['a'] = false; }}
-          onContextMenu={(e) => e.preventDefault()}
-          className="w-12 h-12 bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10 active:bg-white/20 touch-none"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <button
-          onPointerDown={(e) => { e.preventDefault(); keysPressed.current['s'] = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keysPressed.current['s'] = false; }}
-          onPointerLeave={(e) => { e.preventDefault(); keysPressed.current['s'] = false; }}
-          onContextMenu={(e) => e.preventDefault()}
-          className="w-12 h-12 bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10 active:bg-white/20 touch-none"
-        >
-          <ArrowDown size={20} />
-        </button>
-        <button
-          onPointerDown={(e) => { e.preventDefault(); keysPressed.current['d'] = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keysPressed.current['d'] = false; }}
-          onPointerLeave={(e) => { e.preventDefault(); keysPressed.current['d'] = false; }}
-          onContextMenu={(e) => e.preventDefault()}
-          className="w-12 h-12 bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10 active:bg-white/20 touch-none"
-        >
-          <ArrowRight size={20} />
-        </button>
+      {/* Mobile Touch Joystick */}
+      <div className="absolute bottom-6 left-6 md:hidden z-30 opacity-60">
+        <VirtualJoystick
+          onMove={(x, y) => {
+            joystickVector.current.x = x;
+            joystickVector.current.y = y;
+          }}
+        />
       </div>
 
       {/* Global Chat UI Layer */}
