@@ -59,6 +59,7 @@ interface GlobalChatGameProps {
   sharedPresenceRef: React.MutableRefObject<any>;
   onlinePlayers: Player[];
   messages?: any[];
+  isOpen?: boolean;
 }
 
 const getPlayerColor = (username: string) => {
@@ -1301,8 +1302,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
                     });
                   }
                 } else {
-                  // Remote player hit - do not calculate damage locally.
-                  // Only visually show hit effect. We wait for their client to broadcast health_update.
+
                 }
               }
             }
@@ -1339,7 +1339,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           const dy = tY - y;
           const dist = Math.hypot(dx, dy);
 
-          if (dist > 30) { // Stop slightly before hitting exact center
+          if (dist > 30) {
             const currentSpeed = speed;
             vx = (dx / dist) * Math.min(currentSpeed, dist);
             vy = (dy / dist) * Math.min(currentSpeed, dist);
@@ -1347,7 +1347,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
             x += vx * petDt;
             y += vy * petDt;
 
-            // Clamp y so they don't walk out of bounds or too high up
+
             y = Math.min(MAP_HEIGHT, Math.max(MAP_HEIGHT * 0.35, y));
           } else {
             isWalking = isChasing;
@@ -1383,7 +1383,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
           }
         }
       });
-      // --- END MAP PETS UPDATE ---
+      // --- END MAP PETS UPDATE -----
 
       animationFrameId = requestAnimationFrame(gameLoop);
     };
