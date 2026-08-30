@@ -322,7 +322,7 @@ const MAPS: Record<string, MapConfig> = {
 
 
 
-export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRef, sharedPresenceRef, onlinePlayers, messages = [] }: GlobalChatGameProps) {
+export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRef, sharedPresenceRef, onlinePlayers, messages = [], isOpen = true }: GlobalChatGameProps) {
   // Local Player State
   const [isPlaying, setIsPlaying] = useState(false);
   const [localSpriteState, setLocalSpriteState] = useState({ flipX: false, isWalking: false });
@@ -1385,7 +1385,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       });
       // --- END MAP PETS UPDATE ---
 
-      requestAnimationFrame(gameLoop);
+      animationFrameId = requestAnimationFrame(gameLoop);
     };
 
     animationFrameId = requestAnimationFrame(gameLoop);
@@ -1393,11 +1393,14 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isPlaying, sessionInfo, channelRef, channelReadyRef, sharedPresenceRef]);
+  }, [isPlaying, sessionInfo.id, sessionInfo.username, channelRef, channelReadyRef, sharedPresenceRef]);
 
   // Input Listeners
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying || !isOpen) {
+      keysPressed.current = {};
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if typing in an input
@@ -1416,7 +1419,7 @@ export default function GlobalChatGame({ sessionInfo, channelRef, channelReadyRe
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isPlaying]);
+  }, [isPlaying, isOpen]);
 
   if (!isPlaying) {
     return (
