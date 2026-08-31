@@ -137,10 +137,10 @@ export default function Affiliations() {
               onClick={(e) => e.stopPropagation()}
               className="relative w-full max-w-5xl pixel-border bg-foreground p-1 my-10 shadow-2xl"
             >
-              <div className="bg-background h-full p-6 md:p-8 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar relative border-2 border-foreground">
+              <div className="bg-background h-full flex flex-col max-h-[85vh] relative border-2 border-foreground">
 
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8 border-b-2 border-foreground/20 pb-4">
+                <div className="flex justify-between items-center p-6 md:p-8 border-b-2 border-foreground/20 shrink-0 z-10 bg-background">
                   <div className="flex items-center gap-3 min-w-0">
                     <Quote size={24} className="text-primary shrink-0" />
                     <h3 className="font-['Press_Start_2P'] text-[10px] sm:text-xs md:text-base truncate">all_recommendations.log</h3>
@@ -154,8 +154,9 @@ export default function Affiliations() {
                 </div>
 
                 {/* Bento Box Grid */}
-                <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid-flow-row-dense"
+                <div className="p-6 md:p-8 pt-0 overflow-y-auto custom-scrollbar flex-1">
+                  <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid-flow-row-dense"
                   initial="hidden"
                   animate="visible"
                   variants={{
@@ -191,7 +192,8 @@ export default function Affiliations() {
                       </motion.div>
                     );
                   })}
-                </motion.div>
+                  </motion.div>
+                </div>
 
               </div>
             </motion.div>
