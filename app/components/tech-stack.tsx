@@ -95,10 +95,10 @@ export default function TechStack() {
               onClick={(e) => e.stopPropagation()}
               className="relative w-full max-w-4xl pixel-border bg-foreground p-1 shadow-2xl"
             >
-              <div className="bg-background h-full p-6 md:p-8 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar relative border-2 border-foreground">
+              <div className="bg-background h-full flex flex-col max-h-[85vh] relative border-2 border-foreground">
                 
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8 border-b-2 border-foreground/20 pb-4">
+                <div className="flex justify-between items-center p-6 md:p-8 border-b-2 border-foreground/20 shrink-0 z-10 bg-background">
                   <div className="flex items-center gap-3">
                     <Terminal size={24} className="text-primary" />
                     <h3 className="font-['Press_Start_2P'] text-sm md:text-base">system_capabilities.exe</h3>
@@ -112,8 +112,9 @@ export default function TechStack() {
                 </div>
 
                 {/* Content */}
-                <motion.div 
-                  className="space-y-10"
+                <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+                  <motion.div 
+                    className="space-y-10"
                   initial="hidden"
                   animate="visible"
                   variants={{
@@ -147,7 +148,8 @@ export default function TechStack() {
                       </div>
                     </motion.div>
                   ))}
-                </motion.div>
+                  </motion.div>
+                </div>
                 
               </div>
             </motion.div>

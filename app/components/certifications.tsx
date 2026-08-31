@@ -91,10 +91,10 @@ export default function Certifications() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Inner Container */}
-              <div className="border-[2px] border-foreground p-6 md:p-8 bg-background relative flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
+              <div className="border-[2px] border-foreground bg-background relative flex flex-col max-h-[90vh]">
 
                 {/* Modal Header */}
-                <div className="flex justify-between items-center mb-8 border-b-[2px] border-foreground pb-4">
+                <div className="flex justify-between items-center p-6 md:p-8 border-b-[2px] border-foreground bg-background shrink-0 z-10">
                   <h3 className="font-['Press_Start_2P'] text-lg sm:text-xl md:text-2xl">
                     CREDENTIALS
                   </h3>
@@ -107,7 +107,8 @@ export default function Certifications() {
                 </div>
 
                 {/* Grid of Certificates */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {items.map((item, index) => (
                     <motion.div
                       key={index}
@@ -144,6 +145,7 @@ export default function Certifications() {
                       </div>
                     </motion.div>
                   ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
