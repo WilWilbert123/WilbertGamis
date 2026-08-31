@@ -1,5 +1,11 @@
 export const certifications = [
   {
+    title: "IBM Generative AI Engineering",
+    provider: "Coursera / IBM",
+    date: "August 2026",
+    link: "https://www.coursera.org/account/accomplishments/professional-cert/MG73GT5VN"
+  },
+  {
     title: "IBM Full-Stack JavaScript Developer",
     provider: "Coursera / IBM",
     date: "August 2026",

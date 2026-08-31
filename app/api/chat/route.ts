@@ -52,6 +52,7 @@ Projects:
 - FILIFLIX | Full-Stack Movie & TV Streaming Web Application (https://filiflix.wilbert.pro/): Build a responsive movie and TV streaming application using Next.js 15 (App Router), TypeScript, and Tailwind CSS, integrating TMDB API for rich data metadata. Used Supabase for auth and database. Interactive embedded video player with custom playback control.
 
 Certifications:
+- IBM Generative AI Engineering - Coursera / IBM (Aug 2026)
 - IBM Full-Stack JavaScript Developer - Coursera / IBM (Aug 2026)
 - Cybersecurity Fundamental with Cisco Tools - Coursera / Board Infinity (Aug 2026)
 - Google AI - Coursera / Google (Aug 2026)
