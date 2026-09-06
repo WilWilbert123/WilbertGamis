@@ -246,8 +246,44 @@ export default function WorkProjects() {
                   className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-center"
                 >
                   {/* Carousel / Image Section */}
-                  <div className={`relative w-full aspect-[4/3] pixel-border ${isEven ? 'md:order-2' : 'md:order-1'}`}>
-                    <ProjectCarousel images={project.images} title={project.title} />
+                  <div className={`relative w-full ${isEven ? 'md:order-2' : 'md:order-1'}`}>
+                    <div className="w-full aspect-[4/3] pixel-border">
+                      <ProjectCarousel images={project.images} title={project.title} />
+                    </div>
+                    
+                    {/* Client Logos Marquee */}
+                    {(project as any).clients && (project as any).clients.length > 0 && (
+                      <div className="w-full overflow-hidden mt-8">
+                        <p className="font-['Silkscreen'] text-xs text-foreground/50 mb-4 text-center tracking-widest">
+                          TRUSTED BY
+                        </p>
+                        <div 
+                          className="relative flex overflow-hidden"
+                          style={{
+                            maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+                            WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
+                          }}
+                        >
+                          <div
+                            className="flex gap-8 pr-8 w-max items-center animate-marquee"
+                          >
+                            {[...(project as any).clients, ...(project as any).clients].map((client: string, cIdx: number) => (
+                              <div
+                                key={cIdx}
+                                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-background flex items-center justify-center p-3 sm:p-4 shrink-0"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={client}
+                                  alt="Client logo"
+                                  className="w-full h-full object-contain filter grayscale contrast-125 hover:grayscale-0 transition-all duration-300"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Text Section */}

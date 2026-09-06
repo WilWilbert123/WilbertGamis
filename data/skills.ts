@@ -5,11 +5,11 @@ export const skills = [
   },
   {
     category: "Web & AI Stack",
-    items: ["Next.js", "React.js", "TypeScript", "Gemini Vision AI API", "OpenAI API", "Deepseek API", "Vite", "Tailwind CSS", "HTML/CSS"]
+    items: ["Next.js", "React.js", "TypeScript", "LangChain", "LLM RAG", "Gradio", "Gemini Vision AI API", "OpenAI API", "Deepseek API", "Vite", "Tailwind CSS", "HTML/CSS"]
   },
   {
     category: "Backend & Databases",
-    items: ["Node.js", "Express", "Python", "Nginx", "MongoDB Atlas", "MS SQL", "MySQL", "PostgreSQL", "Stored Procedures", "Database Views", "Schema Design", "Supabase", "AWS", "Cloudinary", "Resend SMTP", "REST APIs", "NoSQL", "Cron Jobs"]
+    items: ["Node.js", "Express", "Python", "Nginx", "MongoDB Atlas", "MS SQL", "MySQL", "PostgreSQL", "ChromaDB", "Stored Procedures", "Database Views", "Schema Design", "Supabase", "AWS", "Cloudinary", "Resend SMTP", "REST APIs", "NoSQL", "Cron Jobs"]
   },
   {
     category: "Desktop & Enterprise",
