@@ -55,5 +55,11 @@ export const personalProjects = [
     description: "My legacy developer portfolio demonstrating previous design iterations.",
     tech: ["React 19", "Vite 8", "Vanilla CSS", "Three.js", "React Three Fiber", "React Three Drei", "React Three Rapier", "OGL", "Meshline", "Framer Motion", "GSAP", "React Use Gesture", "React Intersection Observer", "React Icons", "FontAwesome", "React GitHub Calendar"]
   },
-
+  {
+    title: "GIFTER",
+    link: "https://gifter.wilbert.pro/",
+    image: "/asset/personalproject/gifter.png",
+    description: "Zero-login, privacy-first media processing WebApp running completely in your browser.",
+    tech: ["Next.js 16.3", "React 19", "TypeScript", "Tailwind CSS 4", "shadcn/ui", "@base-ui/react", "Lucide React", "next-themes", "tw-animate-css", "@dnd-kit", "FFmpeg WASM", "@distube/ytdl-core", "@imgly/background-removal", "@jsquash", "Fabric.js", "@resvg/resvg-js", "Gifsicle WASM", "pdf-lib", "PDF.js", "html2pdf.js", "docx", "Mammoth", "docx-preview", "xlsx", "Tesseract.js", "JSZip", "qrcode.react", "ESLint"]
+  }
 ];

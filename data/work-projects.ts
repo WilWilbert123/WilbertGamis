@@ -61,6 +61,13 @@ export const workProjects = [
       "/asset/projects/CanteenBilling/canteen5.png",
       "/asset/projects/CanteenBilling/canteen6.png",
       "/asset/projects/CanteenBilling/canteenfirst.png",
+    ],
+    clients: [
+      "/asset/clients/CanteenBillingSystem/Amex.png",
+      "/asset/clients/CanteenBillingSystem/HondaParts.png",
+      "/asset/clients/CanteenBillingSystem/Kawasaki-Logo.png",
+      "/asset/clients/CanteenBillingSystem/PHC.png",
+      "/asset/clients/CanteenBillingSystem/bestpak.png"
     ]
   },
   {
@@ -134,6 +141,9 @@ export const workProjects = [
       "/asset/projects/BISBIO/bisbio3.png",
       "/asset/projects/BISBIO/bisbio4.png",
       "/asset/projects/BISBIO/bisbio5.png",
+    ],
+    clients: [
+      "/asset/clients/BISBIOTimeManagementSystem/bir.png"
     ]
   },
   {
