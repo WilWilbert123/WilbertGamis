@@ -250,14 +250,14 @@ export default function WorkProjects() {
                     <div className="w-full aspect-[4/3] pixel-border">
                       <ProjectCarousel images={project.images} title={project.title} />
                     </div>
-                    
+
                     {/* Client Logos Marquee */}
                     {(project as any).clients && (project as any).clients.length > 0 && (
                       <div className="w-full overflow-hidden mt-8">
                         <p className="font-['Silkscreen'] text-xs text-foreground/50 mb-4 text-center tracking-widest">
                           TRUSTED BY
                         </p>
-                        <div 
+                        <div
                           className="relative flex overflow-hidden"
                           style={{
                             maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
@@ -265,7 +265,7 @@ export default function WorkProjects() {
                           }}
                         >
                           <div
-                            className="flex gap-8 pr-8 w-max items-center animate-marquee"
+                            className={`flex gap-8 pr-8 w-max items-center ${(project as any).clients.length > 1 ? 'animate-marquee' : 'mx-auto'}`}
                           >
                             {[...(project as any).clients, ...(project as any).clients].map((client: string, cIdx: number) => (
                               <div
