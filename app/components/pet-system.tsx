@@ -140,7 +140,7 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
           if (Math.abs(vy) < 1) vy = 0;
           vx *= 0.9; // friction on ground
         }
-        
+
         // Walls
         if (x < 16) { x = 16; vx = -vx * 0.8; }
         if (x > window.innerWidth - 16) { x = window.innerWidth - 16; vx = -vx * 0.8; }
@@ -170,7 +170,7 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
               const distToBallX = ballRef.current.x - pet.x;
               const distToBallY = ballRef.current.y - pet.y;
               const distToBall = Math.sqrt(distToBallX * distToBallX + distToBallY * distToBallY);
-              
+
               if (distToBall < 30) {
                 // Push ball
                 ballRef.current.vx += Math.sign(distToBallX) * 3;

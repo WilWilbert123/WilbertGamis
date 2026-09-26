@@ -33,7 +33,7 @@ function PetDropdownMenu({
           title="Spawn Ball"
         >
           <div className="w-3 h-3 rounded-full bg-foreground group-hover:scale-125 transition-transform animate-bounce shadow-sm" />
-          <span className="text-[8px] font-bold opacity-0 group-hover:opacity-100 transition-opacity mt-1">BALL</span>
+          <span className="text-[8px] font-bold text-black dark:text-white mt-1">BALL</span>
         </button>
         <button onClick={clearPets} className="text-xs hover:underline">Clear</button>
       </div>

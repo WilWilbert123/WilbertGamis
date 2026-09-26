@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import WarpText from "./WarpText/WarpText";
 import DitherVeil from "./DitherVeil/DitherVeil";
+import Galaxy from "./Galaxy/Galaxy";
 
 export default function Hero() {
   const { theme, resolvedTheme } = useTheme();
@@ -80,6 +81,27 @@ export default function Hero() {
             <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 pixel-border bg-foreground mt-12 lg:mt-8">
               {/* Frame inner background */}
               <div className="absolute inset-0 bg-background m-1 flex items-end justify-center">
+
+                {/* Galaxy background (Dark mode only with smooth zero-lag fade) */}
+                {mounted && (
+                  <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-500 ease-in-out ${isDark ? 'opacity-100' : 'opacity-0'}`}>
+                    <Galaxy
+                      active={isDark}
+                      mouseRepulsion
+                      mouseInteraction
+                      density={1}
+                      glowIntensity={0.3}
+                      saturation={0}
+                      hueShift={140}
+                      twinkleIntensity={0.3}
+                      rotationSpeed={0.1}
+                      repulsionStrength={2}
+                      autoCenterRepulsion={0}
+                      starSpeed={0.5}
+                      speed={1}
+                    />
+                  </div>
+                )}
 
                 {/* DitherVeil Target Container */}
                 <div
