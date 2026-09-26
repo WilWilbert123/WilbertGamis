@@ -23,7 +23,7 @@ export default function TechStack() {
       <section className="py-24 relative" id="stack">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Header */}
+
           <div className="flex flex-col items-center justify-center mb-20 gap-4 text-center">
             <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl leading-snug">
               tech stack
@@ -36,7 +36,7 @@ export default function TechStack() {
             </button>
           </div>
 
-          {/* Categories (Clean List Layout) */}
+
           <div className="flex flex-col">
             {skills.map((skillGroup, idx) => (
               <motion.div
