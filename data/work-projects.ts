@@ -86,7 +86,7 @@ export const workProjects = [
     title: "BISMACCARD",
     subtext: "Enterprise Software",
     description:
-      "Enterprise customer reward and loyalty card management system with card issuing, transaction history, point balance tracking, and reporting.",
+      "Enterprise customer reward and loyalty card management system featuring card issuing, transaction history, reporting, and multi-branch Employee ID card printing via self-service kiosks.",
     tech: [
       "Next.js 15",
       "React 18",
