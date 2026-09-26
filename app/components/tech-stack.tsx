@@ -22,25 +22,25 @@ export default function TechStack() {
     <>
       <section className="py-24 relative" id="stack">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           {/* Header */}
           <div className="flex flex-col items-center justify-center mb-20 gap-4 text-center">
             <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl leading-snug">
               tech stack
             </h2>
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 justify-center transition-all hover:text-primary"
             >
-              all capabilities <ArrowRight size={16} />
+              view all capabilities <ArrowRight size={16} />
             </button>
           </div>
 
           {/* Categories (Clean List Layout) */}
           <div className="flex flex-col">
             {skills.map((skillGroup, idx) => (
-              <motion.div 
-                key={idx} 
+              <motion.div
+                key={idx}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
@@ -53,12 +53,12 @@ export default function TechStack() {
                     {skillGroup.category.toUpperCase()}
                   </h3>
                 </div>
-                
+
                 {/* Skills List */}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-3 flex-1">
                   {skillGroup.items.map((item, iIdx) => (
                     <div key={iIdx} className="flex items-center gap-4">
-                      <span 
+                      <span
                         className="font-['Silkscreen'] text-sm sm:text-base hover:-translate-y-1 hover:text-primary transition-transform cursor-default select-none inline-block"
                       >
                         {item}
@@ -96,14 +96,14 @@ export default function TechStack() {
               className="relative w-full max-w-4xl pixel-border bg-foreground p-1 shadow-2xl"
             >
               <div className="bg-background h-full flex flex-col max-h-[85vh] relative border-2 border-foreground">
-                
+
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 md:p-8 border-b-2 border-foreground/20 shrink-0 z-10 bg-background">
                   <div className="flex items-center gap-3">
                     <Terminal size={24} className="text-primary" />
                     <h3 className="font-['Press_Start_2P'] text-sm md:text-base">system_capabilities.exe</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsModalOpen(false)}
                     className="p-2 hover:bg-foreground hover:text-background transition-colors pixel-border"
                   >
@@ -113,44 +113,44 @@ export default function TechStack() {
 
                 {/* Content */}
                 <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
-                  <motion.div 
+                  <motion.div
                     className="space-y-10"
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    visible: { transition: { staggerChildren: 0.25 } }
-                  }}
-                >
-                  {skills.map((group, idx) => (
-                    <motion.div 
-                      key={idx}
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1, duration: 0.6 } }
-                      }}
-                    >
-                      <h4 className="font-['Silkscreen'] text-foreground/50 mb-4 uppercase tracking-widest text-lg">
-                        {'>'} {group.category}
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {group.items.map((item, i) => (
-                          <motion.div 
-                            key={i} 
-                            variants={{
-                              hidden: { opacity: 0, scale: 0.95 },
-                              visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
-                            }}
-                            className="font-mono text-xs md:text-sm p-3 pixel-border hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center"
-                          >
-                            {item}
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  ))}
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      visible: { transition: { staggerChildren: 0.25 } }
+                    }}
+                  >
+                    {skills.map((group, idx) => (
+                      <motion.div
+                        key={idx}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1, duration: 0.6 } }
+                        }}
+                      >
+                        <h4 className="font-['Silkscreen'] text-foreground/50 mb-4 uppercase tracking-widest text-lg">
+                          {'>'} {group.category}
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {group.items.map((item, i) => (
+                            <motion.div
+                              key={i}
+                              variants={{
+                                hidden: { opacity: 0, scale: 0.95 },
+                                visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
+                              }}
+                              className="font-mono text-xs md:text-sm p-3 pixel-border hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center"
+                            >
+                              {item}
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))}
                   </motion.div>
                 </div>
-                
+
               </div>
             </motion.div>
           </motion.div>

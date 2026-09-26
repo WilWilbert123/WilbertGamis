@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import WarpText from "./WarpText/WarpText";
+import DitherVeil from "./DitherVeil/DitherVeil";
 
 export default function Hero() {
   const { theme, resolvedTheme } = useTheme();
@@ -15,8 +15,8 @@ export default function Hero() {
     setMounted(true);
   }, []);
 
-  const isDark = theme === 'dark' || resolvedTheme === 'dark';
-  const textColor = isDark ? '#ffffff' : '#000000';
+  const isDark = theme === "dark" || resolvedTheme === "dark";
+  const textColor = isDark ? "#ffffff" : "#000000";
 
   return (
     <section className="min-h-screen pt-24 pb-12 flex items-center justify-center" id="hero">
@@ -27,7 +27,7 @@ export default function Hero() {
           <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-8">
             <div className="space-y-4 w-full">
               <h2 className="font-['Silkscreen'] text-xl sm:text-2xl md:text-3xl uppercase tracking-widest text-foreground/80">
-                Hello World
+                I'M WILBERT
               </h2>
               <div className="w-full relative overflow-visible -ml-2 lg:-ml-0">
                 {mounted ? (
@@ -47,19 +47,22 @@ export default function Hero() {
                     fontFamily={"inherit" as any}
                     letterSpacing={"inherit" as any}
                     lineHeight={"inherit" as any}
-                    style={{ height: '3.5em', minHeight: '0', width: '100%' }}
+                    style={{ height: "3.5em", minHeight: "0", width: "100%" }}
                   />
                 ) : (
                   <h1 className="font-['Press_Start_2P'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight opacity-0">
                     SOFTWARE<br />ENGINEER
                   </h1>
                 )}
+
               </div>
             </div>
 
             <p className="font-mono text-sm sm:text-base md:text-lg max-w-lg leading-relaxed">
               &gt; BUILDING HIGH-PERFORMANCE WEB & MOBILE APPLICATIONS.
-              SPECIALIZING IN FULL-STACK ECOSYSTEMS AND ENTERPRISE SOFTWARE.
+              DRIVEN BY A DAILY OBSESSION WITH TACKLING COMPLEX CHALLENGES
+              AND ARCHITECTING FULL-STACK & ENTERPRISE SYSTEMS.
+
             </p>
 
             <div className="flex gap-4 pt-4">
@@ -78,29 +81,47 @@ export default function Hero() {
               {/* Frame inner background */}
               <div className="absolute inset-0 bg-background m-1 flex items-end justify-center">
 
-                {/* 
-                  Image container that breaks out of the top of the frame.
-                  w-full keeps it horizontally inside the frame, while h-[130%] allows the head to stick out.
-                */}
-                <div className="w-full h-[130%] relative z-10 origin-bottom transition-transform hover:scale-[1.05] duration-500">
-                  <Image
-                    src="/Wilbertpixel.png"
-                    alt="Wilbert"
-                    fill
-                    sizes="100vw"
-                    className="object-cover object-bottom grayscale hover:grayscale-0 transition-all duration-500"
-                    onError={(e) => {
-                      // Fallback if image not found
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center font-mono text-sm">No Image</div>';
-                    }}
+                {/* DitherVeil Target Container */}
+                <div
+                  className="w-full h-[135%] relative z-10 origin-bottom scale-110 pointer-events-auto"
+                  style={{
+                    maskImage: 'url("/wilbertnew.png")',
+                    WebkitMaskImage: 'url("/wilbertnew.png")',
+                    maskSize: 'contain',
+                    WebkitMaskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskPosition: 'center',
+                    WebkitMaskPosition: 'center',
+                  }}
+                >
+                  <DitherVeil
+                    src="/wilbertnew.png"
+                    style={{ width: '100%', height: '100%' }}
+                    pattern="floyd"
+                    pixelSize={0.5}
+                    inkColor={isDark ? "#ffffffff" : "#ffffffff"}
+                    paperColor="transparent"
+                    revealRadius={180}
+                    softness={0.6}
+                    linger={1}
+                    fit="contain"
+                    rimColor="#a78bfa"
+                    palette="duotone"
+                    levels={4}
+                    contrast={1.0}
+                    brightness={0.15}
+                    rim={0}
+                    reverse={false}
+                    wander={false}
+                    clickBurst
                   />
                 </div>
 
                 {/* Pixelated Name Tag */}
-                <div className="absolute -bottom-3 right-4 z-20 bg-background pixel-border px-3 py-1.5 shadow-md">
+                <div className="absolute -bottom-6 right-4 z-20 bg-background pixel-border px-3 py-1.5 shadow-md">
                   <span className="font-['Press_Start_2P'] text-[10px] md:text-xs">
-                    wilbert gamis
+                    WILBERT GAMIS
                   </span>
                 </div>
 

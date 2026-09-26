@@ -30,17 +30,17 @@ export default function PersonalProjects() {
             <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl">
               personal<br className="hidden sm:block" /> builds
             </h2>
-            <button 
+            <button
               onClick={(e) => { e.preventDefault(); setIsAllProjectsOpen(true); }}
               className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 cursor-pointer transition-colors hover:text-foreground/80"
             >
-              all personal projects <ArrowRight size={16} />
+              view all personal projects <ArrowRight size={16} />
             </button>
           </div>
 
-          {/* Hover Reveal List */}
+          {/* Hover Reveal List - Top 3 Projects */}
           <div className="flex flex-col border-t-[2px] border-foreground/20">
-            {personalProjects.map((project, idx) => (
+            {personalProjects.slice(0, 3).map((project, idx) => (
               <motion.button
                 key={idx}
                 initial={{ opacity: 0, x: idx % 2 === 0 ? -50 : 50 }}
@@ -180,7 +180,7 @@ export default function PersonalProjects() {
               className="relative w-full max-w-6xl pixel-border bg-background p-1 shadow-2xl h-[90vh] flex flex-col"
             >
               <div className="border-[2px] border-foreground p-6 md:p-8 bg-background relative flex flex-col h-full">
-                
+
                 {/* Header */}
                 <div className="flex justify-between items-start mb-8 shrink-0">
                   <h3 className="font-['Press_Start_2P'] text-xl md:text-3xl pr-12">ALL PERSONAL BUILDS</h3>
@@ -210,9 +210,9 @@ export default function PersonalProjects() {
                         {project.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <div className="w-full aspect-video mb-4 overflow-hidden pixel-border border-foreground/30 relative">
-                            <img 
-                              src={project.image} 
-                              alt={project.title} 
+                            <img
+                              src={project.image}
+                              alt={project.title}
                               className="w-full h-full object-cover grayscale-[0.8] group-hover:grayscale-0 transition-all duration-300"
                             />
                             <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-colors" />

@@ -27,9 +27,9 @@ function PetDropdownMenu({
     <div className="absolute right-0 mt-2 w-[156px] bg-background border-2 border-foreground shadow-lg z-50 font-['Silkscreen'] text-sm">
       <div className="p-2 border-b-2 border-foreground flex justify-between items-center relative">
         <span>Pets</span>
-        <button 
-          onClick={() => { spawnBall(); setPetMenuOpen(false); }} 
-          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group cursor-pointer mt-1" 
+        <button
+          onClick={() => { spawnBall(); setPetMenuOpen(false); }}
+          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group cursor-pointer mt-1"
           title="Spawn Ball"
         >
           <div className="w-3 h-3 rounded-full bg-foreground group-hover:scale-125 transition-transform animate-bounce shadow-sm" />
@@ -83,7 +83,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
-            <a href="#" className="font-['Press_Start_2P'] text-xl tracking-tighter">W.</a>
+            <a href="#" className="font-['Press_Start_2P'] text-xl tracking-tighter">JWG</a>
           </div>
 
           {/* Right Side Controls */}

@@ -41,14 +41,14 @@ export default function Certifications() {
             onClick={() => setIsModalOpen(true)}
             className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 justify-center cursor-pointer"
           >
-            credentials <ArrowRight size={16} />
+            view all credentials <ArrowRight size={16} />
           </button>
         </div>
       </div>
 
       {/* Circular Gallery - Full Width */}
-      <motion.div 
-        style={{ height: '600px', position: 'relative' }} 
+      <motion.div
+        style={{ height: '600px', position: 'relative' }}
         className="w-full bg-background cursor-pointer"
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -109,42 +109,42 @@ export default function Certifications() {
                 {/* Grid of Certificates */}
                 <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {items.map((item, index) => (
-                    <motion.div
-                      key={index}
-                      className="flex flex-col gap-2"
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
-                    >
-                      <div
-                        className={`relative aspect-[4/3] pixel-border overflow-hidden ${item.link ? 'cursor-pointer hover:scale-[1.02] transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' : 'cursor-not-allowed opacity-80'}`}
-                        onClick={() => {
-                          if (item.link) {
-                            window.open(item.link, '_blank');
-                          }
-                        }}
+                    {items.map((item, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex flex-col gap-2"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
                       >
-                        <img
-                          src={item.image}
-                          alt={item.text}
-                          className="w-full h-full object-contain p-2"
-                        />
-                      </div>
-                      <div className="flex justify-between items-start mt-2 gap-2">
-                        <span className="font-['Silkscreen'] text-[10px] sm:text-xs break-words leading-snug flex-1">{item.modalText || item.text}</span>
-                        {item.link ? (
-                          <span className="text-[10px] bg-foreground text-background px-2 py-1 font-['Press_Start_2P'] rounded-sm shrink-0">
-                            VERIFIED
-                          </span>
-                        ) : (
-                          <span className="text-[10px] border-[2px] border-foreground px-2 py-1 font-['Press_Start_2P'] rounded-sm opacity-50 shrink-0">
-                            ISSUED
-                          </span>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
+                        <div
+                          className={`relative aspect-[4/3] pixel-border overflow-hidden ${item.link ? 'cursor-pointer hover:scale-[1.02] transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' : 'cursor-not-allowed opacity-80'}`}
+                          onClick={() => {
+                            if (item.link) {
+                              window.open(item.link, '_blank');
+                            }
+                          }}
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.text}
+                            className="w-full h-full object-contain p-2"
+                          />
+                        </div>
+                        <div className="flex justify-between items-start mt-2 gap-2">
+                          <span className="font-['Silkscreen'] text-[10px] sm:text-xs break-words leading-snug flex-1">{item.modalText || item.text}</span>
+                          {item.link ? (
+                            <span className="text-[10px] bg-foreground text-background px-2 py-1 font-['Press_Start_2P'] rounded-sm shrink-0">
+                              VERIFIED
+                            </span>
+                          ) : (
+                            <span className="text-[10px] border-[2px] border-foreground px-2 py-1 font-['Press_Start_2P'] rounded-sm opacity-50 shrink-0">
+                              ISSUED
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
                 </div>
               </div>
