@@ -1,17 +1,31 @@
 export const personalProjects = [
   {
-    title: "ECHO STAMP WEBSITE",
-    link: "https://echo-stamp-journey-666.vercel.app/",
-    image: "/asset/personalproject/echoweb.png",
-    description: "Marketing and landing page for the Echo Stamp application ecosystem.",
-    tech: ["HTML", "CSS", "JSX / JavaScript", "React 19", "Vite", "ESLint 9", "Vercel"]
-  },
-  {
     title: "ECHO STAMP APP",
     link: "https://play.google.com/store/apps/details?id=com.wilbert03.EchoStamp",
     image: "/asset/personalproject/echoapp.png",
     description: "Digital loyalty card and stamp collection mobile application.",
     tech: ["React 19.1", "React Native 0.81", "Expo 54", "Expo Router", "React Navigation", "Redux Toolkit", "AsyncStorage", "Three.js", "React Three Fiber", "Expo-GL", "Lottie", "Lucide React Native", "React Native Maps", "Node.js", "Express.js", "MongoDB", "Mongoose", "JWT", "Bcrypt", "Jest", "Google Gemini API", "Cloudinary", "Firebase", "Resend", "Nodemailer"]
+  },
+  {
+    title: "FILIFLIX",
+    link: "https://filiflix.wilbert.pro/",
+    image: "/asset/personalproject/filiflix.png",
+    description: "A streaming and movie discovery platform featuring local and global content.",
+    tech: ["Next.js 16.3", "React 19", "TypeScript", "Tailwind CSS 4", "Framer Motion", "Lucide React", "Tailwind Merge", "CLSX", "Recharts", "Zustand", "Supabase", "Supabase JS", "Supabase SSR", "Axios", "TMDB API", "@movie-web/providers", "yt-search", "ua-parser-js"]
+  },
+  {
+    title: "GIFTER",
+    link: "https://gifter.wilbert.pro/",
+    image: "/asset/personalproject/gifter.png",
+    description: "Zero-login, privacy-first media processing WebApp running completely in your browser.",
+    tech: ["Next.js 16.3", "React 19", "TypeScript", "Tailwind CSS 4", "shadcn/ui", "@base-ui/react", "Lucide React", "next-themes", "tw-animate-css", "@dnd-kit", "FFmpeg WASM", "@distube/ytdl-core", "@imgly/background-removal", "@jsquash", "Fabric.js", "@resvg/resvg-js", "Gifsicle WASM", "pdf-lib", "PDF.js", "html2pdf.js", "docx", "Mammoth", "docx-preview", "xlsx", "Tesseract.js", "JSZip", "qrcode.react", "ESLint"]
+  },
+  {
+    title: "ECHO STAMP WEBSITE",
+    link: "https://echo-stamp-journey-666.vercel.app/",
+    image: "/asset/personalproject/echoweb.png",
+    description: "Marketing and landing page for the Echo Stamp application ecosystem.",
+    tech: ["HTML", "CSS", "JSX / JavaScript", "React 19", "Vite", "ESLint 9", "Vercel"]
   },
   {
     title: "SADAKO",
@@ -28,18 +42,18 @@ export const personalProjects = [
     tech: ["Next.js", "React 19", "TypeScript", "Supabase", "Tailwind CSS 4", "Tailwind Merge", "clsx", "Next Themes", "Lucide React", "Framer Motion", "Canvas Confetti", "ESLint", "Google Gemini AI"]
   },
   {
-    title: "FILIFLIX",
-    link: "https://filiflix.wilbert.pro/",
-    image: "/asset/personalproject/filiflix.png",
-    description: "A streaming and movie discovery platform featuring local and global content.",
-    tech: ["Next.js 16.3", "React 19", "TypeScript", "Tailwind CSS 4", "Framer Motion", "Lucide React", "Tailwind Merge", "CLSX", "Recharts", "Zustand", "Supabase", "Supabase JS", "Supabase SSR", "Axios", "TMDB API", "@movie-web/providers", "yt-search", "ua-parser-js"]
-  },
-  {
     title: "IROSINHUB",
     link: "https://irosinhub.wilbert.pro/",
     image: "/asset/personalproject/IrosinHub.png",
     description: "A modern web application featuring advanced declarative animations, fluid 3D graphics, and robust form validation.",
     tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Supabase", "Google Gemini API", "React Hook Form", "Zod", "Framer Motion", "Tailwind Animate CSS", "OGL", "ESLint", "PostCSS"]
+  },
+  {
+    title: "PHOTOBOOTH",
+    link: "https://photobooth.wilbert.pro/",
+    image: "/asset/personalproject/photobooth.png",
+    description: "An interactive browser-based virtual photobooth application for capturing, styling, and customizing photo strips.",
+    tech: ["Next.js", "React 19", "TypeScript", "Tailwind CSS", "Lucide React", "Canvas API", "Framer Motion"]
   },
   {
     title: "PORTFOLIO",
@@ -56,10 +70,10 @@ export const personalProjects = [
     tech: ["React 19", "Vite 8", "Vanilla CSS", "Three.js", "React Three Fiber", "React Three Drei", "React Three Rapier", "OGL", "Meshline", "Framer Motion", "GSAP", "React Use Gesture", "React Intersection Observer", "React Icons", "FontAwesome", "React GitHub Calendar"]
   },
   {
-    title: "GIFTER",
-    link: "https://gifter.wilbert.pro/",
-    image: "/asset/personalproject/gifter.png",
-    description: "Zero-login, privacy-first media processing WebApp running completely in your browser.",
-    tech: ["Next.js 16.3", "React 19", "TypeScript", "Tailwind CSS 4", "shadcn/ui", "@base-ui/react", "Lucide React", "next-themes", "tw-animate-css", "@dnd-kit", "FFmpeg WASM", "@distube/ytdl-core", "@imgly/background-removal", "@jsquash", "Fabric.js", "@resvg/resvg-js", "Gifsicle WASM", "pdf-lib", "PDF.js", "html2pdf.js", "docx", "Mammoth", "docx-preview", "xlsx", "Tesseract.js", "JSZip", "qrcode.react", "ESLint"]
+    title: "INSTANGALOG",
+    link: "https://instangalog.online/",
+    image: "/asset/personalproject/instangalog.png",
+    description: "Real-time communication and instant messaging platform with Supabase authentication, Google confirmation, WebSockets, and Resend email integration.",
+    tech: ["Next.js", "React 19", "TypeScript", "Tailwind CSS", "Supabase", "Supabase Auth", "Google OAuth", "Resend", "WebSockets", "Realtime"]
   }
 ];

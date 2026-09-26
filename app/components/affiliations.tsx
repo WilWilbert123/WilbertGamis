@@ -32,7 +32,7 @@ export default function Affiliations() {
               affiliations<br className="hidden sm:block" /> & feedback
             </h2>
             <a href="#contact" className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 transition-transform hover:translate-x-2">
-              connect <ArrowRight size={16} />
+              view all connect <ArrowRight size={16} />
             </a>
           </div>
 
@@ -89,8 +89,8 @@ export default function Affiliations() {
               </div>
               <div className="space-y-8">
                 {previewRecommendations.map((rec, idx) => (
-                  <motion.div 
-                    key={idx} 
+                  <motion.div
+                    key={idx}
                     initial={{ opacity: 0, x: 50 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     whileHover={{ y: -4 }}
@@ -155,43 +155,43 @@ export default function Affiliations() {
 
                 {/* Bento Box Grid */}
                 <div className="p-6 md:p-8 pt-0 overflow-y-auto custom-scrollbar flex-1">
-                  <motion.div 
+                  <motion.div
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 grid-flow-row-dense"
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    visible: { transition: { staggerChildren: 0.15 } }
-                  }}
-                >
-                  {profile.recommendations.map((rec, idx) => {
-                    // Create bento layout logic that cycles organically through all 15 items
-                    const isWide = idx % 5 === 0 || idx % 8 === 3;
-                    const isTall = idx % 6 === 1;
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      visible: { transition: { staggerChildren: 0.15 } }
+                    }}
+                  >
+                    {profile.recommendations.map((rec, idx) => {
+                      // Create bento layout logic that cycles organically through all 15 items
+                      const isWide = idx % 5 === 0 || idx % 8 === 3;
+                      const isTall = idx % 6 === 1;
 
-                    return (
-                      <motion.div
-                        key={idx}
-                        variants={{
-                          hidden: { opacity: 0, y: 30 },
-                          visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
-                        }}
-                        className={`pixel-border bg-background p-6 flex flex-col justify-between group transition-all duration-300 hover:bg-foreground hover:text-background ${isWide ? 'md:col-span-2' : ''} ${isTall ? 'md:row-span-2' : ''}`}
-                      >
-                        <div className="mb-6">
-                          <Quote size={20} className="mb-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                          <p className={`font-mono italic leading-relaxed ${isWide ? 'text-lg md:text-xl' : 'text-sm md:text-base'}`}>
-                            "{rec.quote}"
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3 opacity-90 mt-auto">
-                          <div className="w-6 h-[2px] bg-current" />
-                          <p className="font-['Silkscreen'] text-xs sm:text-sm">
-                            {rec.author}
-                          </p>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                      return (
+                        <motion.div
+                          key={idx}
+                          variants={{
+                            hidden: { opacity: 0, y: 30 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+                          }}
+                          className={`pixel-border bg-background p-6 flex flex-col justify-between group transition-all duration-300 hover:bg-foreground hover:text-background ${isWide ? 'md:col-span-2' : ''} ${isTall ? 'md:row-span-2' : ''}`}
+                        >
+                          <div className="mb-6">
+                            <Quote size={20} className="mb-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            <p className={`font-mono italic leading-relaxed ${isWide ? 'text-lg md:text-xl' : 'text-sm md:text-base'}`}>
+                              "{rec.quote}"
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3 opacity-90 mt-auto">
+                            <div className="w-6 h-[2px] bg-current" />
+                            <p className="font-['Silkscreen'] text-xs sm:text-sm">
+                              {rec.author}
+                            </p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </motion.div>
                 </div>
 
