@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, Menu, X, Cat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LiveViewCount from "./live-view-count";
+import FirePoke from "./fire-poke";
 import { usePets, PetType, PET_SPRITES } from "./pet-system";
 
 function PetDropdownMenu({
@@ -80,15 +81,17 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 w-full bg-background border-b-2 border-foreground z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-2 sm:px-4 lg:px-4">
         <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0 flex items-center">
+          <div className="flex-shrink-0 flex items-center gap-3 sm:gap-4">
             <a href="#" className="font-['Press_Start_2P'] text-xl tracking-tighter">JWG</a>
+            <div className="flex items-center">
+              <LiveViewCount />
+            </div>
           </div>
 
           {/* Right Side Controls */}
           <div className="flex items-center space-x-4 md:space-x-8">
-
             {/* Desktop Links */}
             <div className="hidden md:flex items-center space-x-8 font-['Silkscreen'] text-sm order-0">
               {navLinks.map((link) => (
@@ -98,13 +101,16 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className="order-1 md:absolute md:right-1 md:top-6 flex items-center">
-              <LiveViewCount />
-            </div>
+            {/* Fire Poke */}
+            {mounted && (
+              <div className="order-1 md:order-3 flex items-center">
+                <FirePoke />
+              </div>
+            )}
 
             {/* Pet Toggle Menu */}
             {mounted && (
-              <div className="relative order-2">
+              <div className="relative order-2 md:order-1">
                 <button
                   onClick={() => setPetMenuOpen(!petMenuOpen)}
                   className="p-2 pixel-border pixel-border-hover bg-background flex items-center justify-center"
@@ -123,7 +129,7 @@ export default function Navbar() {
             {mounted && (
               <button
                 onClick={toggleTheme}
-                className="p-2 pixel-border pixel-border-hover bg-background order-2"
+                className="p-2 pixel-border pixel-border-hover bg-background order-3 md:order-2"
                 aria-label="Toggle Dark Mode"
               >
                 {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
