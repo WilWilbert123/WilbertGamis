@@ -268,15 +268,9 @@ export default function WorkProjects() {
 
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-6">
-            <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl mb-12">
+            <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl">
               enterprise<br className="hidden sm:block" /> & client projects
             </h2>
-            <button
-              onClick={(e) => { e.preventDefault(); setIsAllWorkOpen(true); }}
-              className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 cursor-pointer transition-colors hover:text-foreground/80"
-            >
-              view all work projects <ArrowRight size={16} />
-            </button>
           </div>
 
           {/* Editorial Layout */}
@@ -299,40 +293,6 @@ export default function WorkProjects() {
                     <div className="w-full aspect-[4/3] pixel-border">
                       <ProjectCarousel project={project} />
                     </div>
-
-                    {/* Client Logos Marquee */}
-                    {(project as any).clients && (project as any).clients.length > 0 && (
-                      <div className="w-full overflow-hidden mt-8">
-                        <p className="font-['Silkscreen'] text-xs text-foreground/50 mb-4 text-center tracking-widest">
-                          TRUSTED BY
-                        </p>
-                        <div
-                          className="relative flex overflow-hidden"
-                          style={{
-                            maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-                            WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
-                          }}
-                        >
-                          <div
-                            className={`flex gap-8 pr-8 w-max items-center ${(project as any).clients.length > 1 ? 'animate-marquee' : 'mx-auto'}`}
-                          >
-                            {[...(project as any).clients, ...(project as any).clients].map((client: string, cIdx: number) => (
-                              <div
-                                key={cIdx}
-                                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-background flex items-center justify-center p-3 sm:p-4 shrink-0"
-                              >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={client}
-                                  alt="Client logo"
-                                  className="w-full h-full object-contain filter grayscale contrast-125 hover:grayscale-0 transition-all duration-300"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Text Section */}
@@ -376,6 +336,16 @@ export default function WorkProjects() {
                 </motion.div>
               );
             })}
+          </div>
+
+          {/* Bottom Action Link */}
+          <div className="mt-16 flex justify-center">
+            <button
+              onClick={(e) => { e.preventDefault(); setIsAllWorkOpen(true); }}
+              className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 cursor-pointer transition-colors hover:text-foreground/80"
+            >
+              view all work projects <ArrowRight size={16} />
+            </button>
           </div>
 
         </div>

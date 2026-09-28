@@ -30,12 +30,6 @@ export default function PersonalProjects() {
             <h2 className="font-['Press_Start_2P'] text-xl sm:text-2xl md:text-3xl">
               personal<br className="hidden sm:block" /> builds
             </h2>
-            <button
-              onClick={(e) => { e.preventDefault(); setIsAllProjectsOpen(true); }}
-              className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 cursor-pointer transition-colors hover:text-foreground/80"
-            >
-              view all personal projects <ArrowRight size={16} />
-            </button>
           </div>
 
           {/* Hover Reveal List - Top 3 Projects */}
@@ -67,6 +61,16 @@ export default function PersonalProjects() {
                 </div>
               </motion.button>
             ))}
+          </div>
+
+          {/* Bottom Action Link */}
+          <div className="mt-16 flex justify-center">
+            <button
+              onClick={(e) => { e.preventDefault(); setIsAllProjectsOpen(true); }}
+              className="font-['Silkscreen'] text-sm sm:text-base hover:underline underline-offset-4 flex items-center gap-2 cursor-pointer transition-colors hover:text-foreground/80"
+            >
+              view all personal projects <ArrowRight size={16} />
+            </button>
           </div>
 
         </div>
