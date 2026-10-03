@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Mail, Send, CheckCircle2, AlertCircle, Loader2, Sparkles, MapPin, Globe, Check, RotateCcw } from "lucide-react";
 import { FaGithub, FaXTwitter, FaLinkedin, FaInstagram } from "react-icons/fa6";
 import { profile } from "../../data/profile";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
 export default function Contact() {
@@ -75,19 +75,19 @@ export default function Contact() {
     }
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.1 } }
   };
 
-  const fadeUp = {
+  const fadeUp: Variants = {
     hidden: { opacity: 0, y: 24 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0, 0, 0.2, 1] } }
   };
 
-  const fadeIn = {
+  const fadeIn: Variants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+    visible: { opacity: 1, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } }
   };
 
   return (
