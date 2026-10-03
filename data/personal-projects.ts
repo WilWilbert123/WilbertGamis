@@ -1,5 +1,16 @@
 export const personalProjects = [
   {
+    title: "OKEKARAOKE",
+    link: "https://www.okekaraoke.sbs/",
+    image: "/asset/personalproject/okekaraoke.png",
+    description: "Interactive real-time web & mobile karaoke platform featuring live song search, synchronized lyrics player, room song queue reservations, TV screen pairing, room chat, and floating reactions.",
+    tech: [
+      "Next.js 16", "React 19", "TypeScript", "Tailwind CSS 4", "Three.js", "Lucide React", "qrcode.react", "ESLint",
+      "React Native 0.76", "Expo 52", "React Navigation", "Expo Camera", "react-native-qrcode-svg", "react-native-webview", "react-native-youtube-iframe", "AsyncStorage", "Expo Linear Gradient", "EAS",
+      "Supabase", "PostgreSQL", "Supabase Auth", "Supabase Realtime", "Supabase SSR"
+    ]
+  },
+  {
     title: "ECHO STAMP APP",
     link: "https://play.google.com/store/apps/details?id=com.wilbert03.EchoStamp",
     image: "/asset/personalproject/echoapp.png",
