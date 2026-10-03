@@ -701,9 +701,9 @@ create policy "Allow public delete contact_messages" on public.contact_messages 
             </div>
 
             {/* Inquiries Table */}
-            <div className="flex-1 border-2 border-white bg-black overflow-y-auto custom-scrollbar min-h-0">
+            <div className={`flex-1 border-2 ${border} ${bg} overflow-y-auto custom-scrollbar min-h-0`}>
               <table className="w-full text-left text-xs">
-                <thead className="bg-white text-black uppercase font-['Silkscreen'] sticky top-0 z-10">
+                <thead className={`${invertedBg} uppercase font-['Silkscreen'] sticky top-0 z-10`}>
                   <tr>
                     <th className="p-3">Status</th>
                     <th className="p-3">Sender</th>
@@ -714,7 +714,7 @@ create policy "Allow public delete contact_messages" on public.contact_messages 
                     <th className="p-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/20">
+                <tbody className={`divide-y ${isDark ? "divide-white/20" : "divide-black/20"}`}>
                   {filteredInquiries.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="p-8 text-center text-neutral-400">
