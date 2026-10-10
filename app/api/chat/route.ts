@@ -59,8 +59,10 @@ Featured Personal Projects & Builds:
 - UPPERCHAT (https://upperchat.wilbert.pro/): AI-Powered study assistant using Next.js, TypeScript, Supabase, Tailwind CSS, and Google Gemini API.
 - SADAKO (https://sadako.wilbert.pro/): Real-Time sentiment & mood advisor using Vite, TypeScript, Tailwind CSS, Supabase, and Google GenAI.
 - IROSINHUB (https://irosinhub.wilbert.pro/): Municipality of Irosin tourism web portal showcasing local barangays, hot spring resorts, and cultural sites using Next.js, React, TypeScript, Tailwind CSS, Supabase, and Google Gemini API.
+- BANTAY AI (Offline Local Disaster Intelligence System): Offline-first emergency intelligence platform and bilingual AI assistant designed for the Philippines to assist citizens, disaster responders, and LGUs during natural disasters when internet is unavailable. Built with Next.js 16, App Router, React 19, TypeScript, Tailwind CSS, SQLite3 (FTS5), Leaflet.js, and Ollama local LLMs (llama3:8b, mistral, qwen).
 
 Certifications:
+- App Builders PH Hackathon 2026 - App Builders PH (Oct 2026)
 - IBM Generative AI Engineering - Coursera / IBM (Aug 2026)
 - IBM Full-Stack JavaScript Developer - Coursera / IBM (Aug 2026)
 - Cybersecurity Fundamental with Cisco Tools - Coursera / Board Infinity (Aug 2026)
@@ -74,11 +76,10 @@ Certifications:
 
 Additional Skills:
 - Mobile Development: React Native, Swift, Expo, Redux Toolkit, Lottie Animation, Google Maps API, Firebase FCM
-- Web & AI Stack: Next.js (15, 16.3), React (18, 19), TypeScript, Tailwind CSS (4), PostCSS, Zustand, React Hook Form, Zod, Framer Motion, Lucide React, Konva / React Konva, Three.js / React Three Fiber, OGL WebGL, Canvas API, FFmpeg WASM, Tesseract.js, Fabric.js, LangChain, RAG, Gemini Vision AI API
-- Backend & Databases: Node.js, Express, Python, .NET C#, VBScript, PM2, Nginx, MongoDB Atlas, MS SQL, MySQL, Supabase (PostgreSQL, Auth, Storage Bucket, Realtime, SSR), Resend SMTP, WebSockets, REST APIs, Stored Procedures, Views
+- Web & AI Stack: Next.js (15, 16.3), React (18, 19), TypeScript, Three.js, React Three Fiber, Zustand, React Hook Form, Zod, Framer Motion, Lucide React, Konva, React Konva, Tailwind CSS (4), PostCSS, OGL WebGL, Canvas API, FFmpeg WASM, Tesseract.js, Fabric.js, LangChain, RAG, Gemini Vision AI API, OpenAI API, Claude API, Deepseek API, Ollama, Leaflet.js, Vite, HTML/CSS
+- Backend & Databases: Node.js, Express, Python, .NET C#, VBScript, PM2, Nginx, MongoDB Atlas, PostgreSQL, SQLite3, MS SQL, MySQL, ChromaDB, Stored Procedures, Database Views, Schema Design, Supabase, Magic Link Auth, WebSockets, Push Notifications, AWS, Cloudinary, Resend SMTP, REST APIs, NoSQL, Cron Jobs
 - Desktop & Enterprise: .NET C#, VB.NET, VBScript, Crystal Reports, Smart Card / Barcode Integration
 - Tools & Platforms: Git, GitHub, Vercel, Netlify, Google Play Console, Postman, Visual Studio, VS Code, Antigravity
-- Languages: English (Fluent), Filipino (Native)
 `;
 
 export async function POST(req: Request) {

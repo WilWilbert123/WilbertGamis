@@ -115,13 +115,26 @@ export default function PersonalProjects() {
                   </button>
                 </div>
 
-                {/* Clickable Image */}
-                {selectedProject.image && (
+                {/* Clickable Image or Image Carousel */}
+                {(selectedProject as any).images && (selectedProject as any).images.length > 0 ? (
+                  <div className="mb-8 overflow-x-auto flex gap-4 custom-scrollbar pb-4 snap-x shrink-0">
+                    {(selectedProject as any).images.map((img: string, i: number) => (
+                      <div key={i} className="flex-shrink-0 w-full sm:w-[90%] md:w-[80%] aspect-video relative snap-center pixel-border">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={img}
+                          alt={`${selectedProject.title} screenshot ${i + 1}`}
+                          className="w-full h-full object-contain bg-background/50"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : selectedProject.image ? (
                   <a
                     href={selectedProject.link !== "#" ? selectedProject.link : undefined}
                     target={selectedProject.link !== "#" ? "_blank" : undefined}
                     rel="noopener noreferrer"
-                    className="block relative w-full aspect-[4/3] mb-8 group cursor-pointer"
+                    className="block relative w-full aspect-video mb-8 group cursor-pointer shrink-0"
                   >
                     <div className="absolute inset-0 bg-foreground/10 group-hover:bg-transparent transition-colors z-10 pointer-events-none" />
 
@@ -141,7 +154,7 @@ export default function PersonalProjects() {
                       className="w-full h-full object-contain bg-background/50 pixel-border grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500"
                     />
                   </a>
-                )}
+                ) : null}
 
                 {/* Tech Stack */}
                 {selectedProject.tech && selectedProject.tech.length > 0 && (

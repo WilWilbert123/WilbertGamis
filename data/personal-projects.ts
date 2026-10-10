@@ -1,5 +1,20 @@
 export const personalProjects = [
   {
+    title: "BANTAY AI",
+    link: "#",
+    image: "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.07 PM.png",
+    images: [
+      "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.01.34 PM.png",
+      "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.07 PM.png",
+      "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.13 PM.png",
+      "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.27 PM.png",
+      "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.39 PM.png",
+      "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.53 PM.png"
+    ],
+    description: "Offline Local Disaster Intelligence System. An offline-first emergency intelligence platform and bilingual AI assistant designed for the Philippines during natural disasters.",
+    tech: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS", "SQLite3", "FTS5", "Leaflet.js", "Ollama", "llama3:8b", "mistral", "qwen", "PWA", "Node.js", "Three.js", "Zustand", "React Hook Form", "Zod", "Framer Motion", "Lucide React", "Konva", "React Konva", "React Three Fiber", "PostgreSQL", "WebSockets", "Claude API", "Push Notifications", "Magic Link Auth"]
+  },
+  {
     title: "OKEKARAOKE",
     link: "https://www.okekaraoke.sbs/",
     image: "/asset/personalproject/okekaraoke.png",

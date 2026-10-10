@@ -74,7 +74,7 @@ export default function AdminDashboard() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Tabs
-  const [activeTab, setActiveTab] = useState<"inquiries" | "visitors" | "messages" | "sql">("inquiries");
+  const [activeTab, setActiveTab] = useState<"inquiries" | "visitors" | "messages" | "sql" | "settings">("inquiries");
 
   // Clearing states
   const [isClearing, setIsClearing] = useState<string | null>(null);
@@ -83,6 +83,12 @@ export default function AdminDashboard() {
   const [visitors, setVisitors] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [inquiries, setInquiries] = useState<any[]>([]);
+  const [heroImage, setHeroImage] = useState<string>("/wilbertnew.png");
+  const [heroScale, setHeroScale] = useState(110);
+  const [heroCrop, setHeroCrop] = useState(false);
+  const [heroDisableBg, setHeroDisableBg] = useState(false);
+  const [heroEffect, setHeroEffect] = useState("hologram");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Search & Filters
@@ -214,6 +220,20 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .limit(200);
       if (iData) setInquiries(iData);
+
+      // 4. Fetch Settings
+      const { data: sData } = await supabase.from("portfolio_settings").select("*");
+      if (sData) {
+        sData.forEach((setting) => {
+          if (setting.setting_key === "hero_image") setHeroImage(setting.setting_value);
+          if (setting.setting_key === "hero_scale") setHeroScale(parseInt(setting.setting_value) || 110);
+          if (setting.setting_key === "hero_crop") setHeroCrop(setting.setting_value === "true");
+          if (setting.setting_key === "hero_disable_bg") setHeroDisableBg(setting.setting_value === "true");
+          if (setting.setting_key === "hero_effect") setHeroEffect(setting.setting_value);
+          // Fallback if they still had hero_bw_filter
+          if (setting.setting_key === "hero_bw_filter" && setting.setting_value === "true" && !sData.find((s) => s.setting_key === "hero_effect")) setHeroEffect("bw");
+        });
+      }
     } catch (err) {
       console.error("Error fetching admin data:", err);
     } finally {
@@ -260,6 +280,25 @@ export default function AdminDashboard() {
     } catch (e) { }
     setIsAuthenticated(false);
     localStorage.removeItem("wilbert_admin_auth");
+  };
+
+  const saveSettings = async () => {
+    setIsSavingSettings(true);
+    const updates = [
+      { setting_key: "hero_image", setting_value: heroImage },
+      { setting_key: "hero_scale", setting_value: heroScale.toString() },
+      { setting_key: "hero_crop", setting_value: heroCrop.toString() },
+      { setting_key: "hero_disable_bg", setting_value: heroDisableBg.toString() },
+      { setting_key: "hero_effect", setting_value: heroEffect }
+    ];
+    const { error } = await supabase.from("portfolio_settings").upsert(updates, { onConflict: "setting_key" });
+    setIsSavingSettings(false);
+    if (error) {
+      console.error(error);
+      alert("Error saving settings: " + error.message);
+    } else {
+      alert("Settings saved successfully!");
+    }
   };
 
   // Actions: Contact Messages
@@ -397,6 +436,22 @@ create policy "Allow public insert contact_messages" on public.contact_messages 
 create policy "Allow public select contact_messages" on public.contact_messages for select using (true);
 create policy "Allow public update contact_messages" on public.contact_messages for update using (true);
 create policy "Allow public delete contact_messages" on public.contact_messages for delete using (true);
+
+-- 4. Settings Table
+create table if not exists public.portfolio_settings (
+  setting_key text primary key,
+  setting_value text not null,
+  updated_at timestamp with time zone not null default timezone ('utc'::text, now())
+) TABLESPACE pg_default;
+insert into public.portfolio_settings (setting_key, setting_value) values ('hero_image', '/wilbertnew.png') on conflict (setting_key) do nothing;
+insert into public.portfolio_settings (setting_key, setting_value) values ('hero_scale', '110') on conflict (setting_key) do nothing;
+insert into public.portfolio_settings (setting_key, setting_value) values ('hero_crop', 'false') on conflict (setting_key) do nothing;
+insert into public.portfolio_settings (setting_key, setting_value) values ('hero_disable_bg', 'false') on conflict (setting_key) do nothing;
+insert into public.portfolio_settings (setting_key, setting_value) values ('hero_effect', 'hologram') on conflict (setting_key) do nothing;
+alter table public.portfolio_settings enable row level security;
+create policy "Allow public read portfolio_settings" on public.portfolio_settings for select using (true);
+create policy "Allow public update portfolio_settings" on public.portfolio_settings for update using (true);
+create policy "Allow public insert portfolio_settings" on public.portfolio_settings for insert with check (true);
 `;
 
   const copySql = () => {
@@ -645,6 +700,16 @@ create policy "Allow public delete contact_messages" on public.contact_messages 
               }`}
           >
             <MessageSquare size={15} /> Global Messages ({messages.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`px-4 py-2 font-['Silkscreen'] text-xs flex items-center gap-2 border-t-2 border-x-2 transition-colors cursor-pointer ${activeTab === "settings"
+              ? tabActive
+              : tabInactive
+              }`}
+          >
+            <AlertTriangle size={15} /> Settings
           </button>
 
           <button
@@ -965,6 +1030,107 @@ create policy "Allow public delete contact_messages" on public.contact_messages 
             <pre className={`flex-1 ${bg} border-2 ${border} p-4 text-xs ${text} overflow-y-auto custom-scrollbar font-mono leading-relaxed min-h-0`}>
               {sqlScript}
             </pre>
+          </div>
+        )}
+
+        {/* TAB 5: SETTINGS */}
+        {activeTab === "settings" && (
+          <div className="flex-1 flex flex-col min-h-0 pt-3 space-y-4 overflow-hidden">
+            <div className={`border-2 ${border} ${bg} p-6 space-y-6 overflow-y-auto custom-scrollbar`}>
+              <div>
+                <h3 className={`font-['Press_Start_2P'] text-sm ${text} mb-2`}>PORTFOLIO SETTINGS</h3>
+                <p className={`text-xs ${dimText} font-mono`}>
+                  Manage global settings for your portfolio.
+                </p>
+              </div>
+
+              <div className="space-y-4 max-w-lg">
+                <div>
+                  <label className={`block text-xs uppercase ${text} mb-2 font-['Silkscreen']`}>
+                    Hero Image URL
+                  </label>
+                  <select
+                    value={heroImage}
+                    onChange={(e) => setHeroImage(e.target.value)}
+                    className={`w-full ${inputCls} border p-3 text-xs font-mono outline-none`}
+                  >
+                    <option value="/wilbertnew.png">/wilbertnew.png (Default)</option>
+                    <option value="/Wilbert.png">/Wilbert.png</option>
+                    <option value="/Wilbertpixel.png">/Wilbertpixel.png</option>
+                    <option value="/cyberpunk.jpeg">/cyberpunk.jpeg</option>
+                    <option value="/mrrobot1png.png">/mrrobot1png.png</option>
+                  </select>
+                </div>
+
+                {heroImage && (
+                  <div className="mt-4 border-2 border-dashed border-neutral-600 p-4">
+                    <p className={`text-[10px] ${dimText} mb-2 font-['Silkscreen']`}>PREVIEW (IMAGE ONLY)</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={heroImage} alt="Hero Preview" className={`h-40 object-contain mx-auto ${heroEffect === 'bw' ? 'grayscale' : heroEffect === 'hologram' ? 'grayscale invert' : ''}`} />
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <label className={`block text-xs uppercase ${text} mb-2 font-['Silkscreen']`}>
+                    Zoom / Scale ({heroScale}%)
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="200"
+                    value={heroScale}
+                    onChange={(e) => setHeroScale(Number(e.target.value))}
+                    className="w-full cursor-pointer accent-white"
+                  />
+                </div>
+
+                <div className="pt-2 space-y-3 font-mono text-xs">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={heroCrop}
+                      onChange={(e) => setHeroCrop(e.target.checked)}
+                      className="w-4 h-4 accent-white cursor-pointer"
+                    />
+                    <span>Crop / Cover Image (Fill Area)</span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={heroDisableBg}
+                      onChange={(e) => setHeroDisableBg(e.target.checked)}
+                      className="w-4 h-4 accent-white cursor-pointer"
+                    />
+                    <span>Disable Galaxy Background</span>
+                  </label>
+                </div>
+
+                <div className="pt-2">
+                  <label className={`block text-xs uppercase ${text} mb-2 font-['Silkscreen']`}>
+                    Dither Style Effect
+                  </label>
+                  <select
+                    value={heroEffect}
+                    onChange={(e) => setHeroEffect(e.target.value)}
+                    className={`w-full ${inputCls} border p-3 text-xs font-mono outline-none`}
+                  >
+                    <option value="hologram">Hologram / Transparent (Original)</option>
+                    <option value="bw">Solid Black & White Photo</option>
+                    <option value="color">Real Color Photo</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={saveSettings}
+                  disabled={isSavingSettings}
+                  className={`w-full ${invertedBg} ${hoverBg} font-['Silkscreen'] text-xs px-6 py-4 border-2 ${border} transition-all flex justify-center items-center gap-2 cursor-pointer font-bold`}
+                >
+                  {isSavingSettings ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                  {isSavingSettings ? "SAVING..." : "SAVE SETTINGS"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

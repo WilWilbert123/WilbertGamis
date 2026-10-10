@@ -1,5 +1,11 @@
 export const certifications = [
   {
+    title: "App Builders PH Hackathon 2026",
+    provider: "App Builders PH",
+    date: "October 2026",
+    link: "https://appbuildersph.com/hackathon/"
+  },
+  {
     title: "IBM Generative AI Engineering",
     provider: "Coursera / IBM",
     date: "August 2026",

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 const items = [
+  { image: '/asset/certificate/appbuildercert.png', text: 'Hackathon', modalText: 'App Builders PH Hackathon 2026', link: 'https://appbuildersph.com/hackathon/' },
   { image: '/asset/certificate/IBM GenerativeAIEngineeringMG73GT5VNXHM.jpeg', text: 'IBM Gen AI', modalText: 'IBM Generative AI Engineering', link: 'https://www.coursera.org/account/accomplishments/professional-cert/MG73GT5VNXHM' },
   { image: '/asset/certificate/AWS.png', text: 'AWS', link: 'https://skillbuilder.aws/learn/4URFGY63KV/official-practice-question-set-aws-certified-ai-practitioner--aifc01--english/FVG43Y1PAX' },
   { image: '/asset/certificate/Cybersecurity with cisco.png', text: 'Cisco', modalText: 'Cybersecurity Fundamental with CISCO Tools', link: 'https://www.coursera.org/account/accomplishments/specialization/certificate/T0WFQT95HWPK' },
