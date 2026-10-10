@@ -8,12 +8,59 @@ import WarpText from "./WarpText/WarpText";
 import DitherVeil from "./DitherVeil/DitherVeil";
 import Galaxy from "./Galaxy/Galaxy";
 
+import { supabase } from "@/lib/supabase";
+
 export default function Hero() {
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [heroImage, setHeroImage] = useState("/wilbertnew.png");
+  const [heroScale, setHeroScale] = useState(110);
+  const [heroCrop, setHeroCrop] = useState(false);
+  const [heroDisableBg, setHeroDisableBg] = useState(false);
+  const [heroEffect, setHeroEffect] = useState("hologram");
 
   useEffect(() => {
     setMounted(true);
+
+    const fetchSettings = async () => {
+      const { data } = await supabase.from("portfolio_settings").select("*");
+      if (data) {
+        data.forEach((setting) => {
+          if (setting.setting_key === "hero_image") setHeroImage(setting.setting_value);
+          if (setting.setting_key === "hero_scale") setHeroScale(parseInt(setting.setting_value) || 110);
+          if (setting.setting_key === "hero_crop") setHeroCrop(setting.setting_value === "true");
+          if (setting.setting_key === "hero_disable_bg") setHeroDisableBg(setting.setting_value === "true");
+          if (setting.setting_key === "hero_effect") setHeroEffect(setting.setting_value);
+          // fallback
+          if (setting.setting_key === "hero_bw_filter" && setting.setting_value === "true" && !data.find((s) => s.setting_key === "hero_effect")) setHeroEffect("bw");
+        });
+      }
+    };
+
+    fetchSettings();
+
+    const channel = supabase
+      .channel("hero-settings-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "portfolio_settings" },
+        (payload) => {
+          if (payload.new) {
+            const key = (payload.new as any).setting_key;
+            const val = (payload.new as any).setting_value;
+            if (key === "hero_image") setHeroImage(val);
+            if (key === "hero_scale") setHeroScale(parseInt(val) || 110);
+            if (key === "hero_crop") setHeroCrop(val === "true");
+            if (key === "hero_disable_bg") setHeroDisableBg(val === "true");
+            if (key === "hero_effect") setHeroEffect(val);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const isDark = theme === "dark" || resolvedTheme === "dark";
@@ -78,12 +125,12 @@ export default function Hero() {
           {/* Right Side: Image */}
           <div className="flex-1 flex justify-center lg:justify-end w-full max-w-md lg:max-w-none mt-12 lg:mt-0">
             {/* The frame box */}
-            <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 pixel-border bg-foreground mt-12 lg:mt-8">
+            <div className={`relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 pixel-border mt-12 lg:mt-8 ${heroEffect === 'bw' ? 'bg-black' : 'bg-foreground'}`}>
               {/* Frame inner background */}
-              <div className="absolute inset-0 bg-background m-1 flex items-end justify-center">
+              <div className={`absolute inset-0 m-1 flex items-end justify-center ${heroEffect === 'bw' ? 'bg-white' : 'bg-background'}`}>
 
                 {/* Galaxy background (Dark mode only with smooth zero-lag fade) */}
-                {mounted && (
+                {mounted && !heroDisableBg && (
                   <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-500 ease-in-out ${isDark ? 'opacity-100' : 'opacity-0'}`}>
                     <Galaxy
                       active={isDark}
@@ -103,42 +150,66 @@ export default function Hero() {
                   </div>
                 )}
 
-                {/* DitherVeil Target Container */}
-                <div
-                  className="w-full h-[135%] relative z-10 origin-bottom scale-110 pointer-events-auto"
-                  style={{
-                    maskImage: 'url("/wilbertnew.png")',
-                    WebkitMaskImage: 'url("/wilbertnew.png")',
-                    maskSize: 'contain',
-                    WebkitMaskSize: 'contain',
-                    maskRepeat: 'no-repeat',
-                    WebkitMaskRepeat: 'no-repeat',
-                    maskPosition: 'center',
-                    WebkitMaskPosition: 'center',
-                  }}
-                >
-                  <DitherVeil
-                    src="/wilbertnew.png"
-                    style={{ width: '100%', height: '100%' }}
-                    pattern="floyd"
-                    pixelSize={0.5}
-                    inkColor={isDark ? "#ffffffff" : "#ffffffff"}
-                    paperColor="transparent"
-                    revealRadius={180}
-                    softness={0.6}
-                    linger={1}
-                    fit="contain"
-                    rimColor="#a78bfa"
-                    palette="duotone"
-                    levels={4}
-                    contrast={1.0}
-                    brightness={0.15}
-                    rim={0}
-                    reverse={false}
-                    wander={false}
-                    clickBurst
-                  />
-                </div>
+                {/* Dynamic Dither Colors based on effect */}
+                {(() => {
+                  // By default (hologram), we use white ink and transparent (black) paper.
+                  // In dark mode, this looks like a glowing white hologram.
+                  // In light mode, this creates a cool "inverted silver glass" effect!
+                  let ditherInk = "#ffffff";
+                  let ditherPaper = "transparent";
+                  let ditherPalette: "duotone" | "rgb" = "duotone";
+
+                  if (heroEffect === "bw") {
+                    // For Solid B&W, we force the frame to be white, so paper must be white.
+                    ditherInk = "#000000";
+                    ditherPaper = "#ffffff";
+                    ditherPalette = "duotone";
+                  } else if (heroEffect === "color") {
+                    ditherInk = "#000000";
+                    ditherPaper = isDark ? "#000000" : "#ffffff";
+                    ditherPalette = "rgb";
+                  }
+
+                  return (
+                    <div
+                      className="w-full h-[135%] relative z-10 origin-bottom pointer-events-auto"
+                      style={{
+                        transform: `scale(${heroScale / 100})`,
+                        filter: 'none',
+                        maskImage: `url("${heroImage}")`,
+                        WebkitMaskImage: `url("${heroImage}")`,
+                        maskSize: heroCrop ? 'cover' : 'contain',
+                        WebkitMaskSize: heroCrop ? 'cover' : 'contain',
+                        maskRepeat: 'no-repeat',
+                        WebkitMaskRepeat: 'no-repeat',
+                        maskPosition: 'center',
+                        WebkitMaskPosition: 'center',
+                      }}
+                    >
+                      <DitherVeil
+                        src={heroImage}
+                        style={{ width: '100%', height: '100%' }}
+                        pattern="floyd"
+                        pixelSize={0.5}
+                        inkColor={ditherInk}
+                        paperColor={ditherPaper}
+                        revealRadius={180}
+                        softness={0.6}
+                        linger={1}
+                        fit={heroCrop ? "cover" : "contain"}
+                        rimColor="#a78bfa"
+                        palette={ditherPalette}
+                        levels={4}
+                        contrast={1.0}
+                        brightness={0.15}
+                        rim={0}
+                        reverse={false}
+                        wander={false}
+                        clickBurst
+                      />
+                    </div>
+                  );
+                })()}
 
                 {/* Pixelated Name Tag */}
                 <div className="absolute -bottom-6 right-4 z-20 bg-background pixel-border px-3 py-1.5 shadow-md">
