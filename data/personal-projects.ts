@@ -12,7 +12,7 @@ export const personalProjects = [
       "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.53 PM.png"
     ],
     description: "Offline Local Disaster Intelligence System. An offline-first emergency intelligence platform and bilingual AI assistant designed for the Philippines during natural disasters.",
-    tech: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS", "SQLite3", "FTS5", "Leaflet.js", "Ollama", "llama3:8b", "mistral", "qwen", "PWA", "Node.js", "Three.js", "Zustand", "React Hook Form", "Zod", "Framer Motion", "Lucide React", "Konva", "React Konva", "React Three Fiber", "PostgreSQL", "WebSockets", "Claude API", "Push Notifications", "Magic Link Auth"]
+    tech: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS", "SQLite3", "FTS5", "Leaflet.js", "Ollama", "llama3:8b", "mistral", "qwen", "PWA", "Node.js"]
   },
   {
     title: "OKEKARAOKE",
