@@ -9,11 +9,11 @@ export const skills = [
   },
   {
     category: "Backend & Databases",
-    items: ["Node.js", "Express", "Python", "Nginx", "MongoDB Atlas", "PostgreSQL", "SQLite3", "MS SQL", "MySQL", "ChromaDB", "Stored Procedures", "Database Views", "Schema Design", "Supabase", "Magic Link Auth", "WebSockets", "Push Notifications", "AWS", "Cloudinary", "Resend SMTP", "REST APIs", "NoSQL", "Cron Jobs"]
+    items: ["Node.js", "Express", "Socket.IO", "Python", "Nginx", "MongoDB Atlas", "PostgreSQL", "SQLite3", "MS SQL", "MySQL", "ChromaDB", "Stored Procedures", "Database Views", "Schema Design", "Supabase", "Magic Link Auth", "WebSockets", "Push Notifications", "AWS", "Cloudinary", "Resend SMTP", "REST APIs", "NoSQL", "Cron Jobs"]
   },
   {
     category: "Desktop & Enterprise",
-    items: ["VB.NET", "Crystal Reports", "C#"]
+    items: ["VB.NET", "Crystal Reports", "C#", "PowerShell", "Chromium App Mode"]
   },
   {
     category: "Tools & Platforms",

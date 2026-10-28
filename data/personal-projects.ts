@@ -1,5 +1,35 @@
 export const personalProjects = [
   {
+    title: "GUARDIAN",
+    link: "#",
+    image: "/asset/personalproject/guardian/firstimage.jpg",
+    images: [
+      "/asset/personalproject/guardian/firstimage.jpg",
+      "/asset/personalproject/guardian/viber_image_2026-10-26_11-18-41-349.png",
+      "/asset/personalproject/guardian/viber_image_2026-10-26_11-18-42-507.png",
+      "/asset/personalproject/guardian/viber_image_2026-10-26_11-18-43-623.png",
+      "/asset/personalproject/guardian/viber_image_2026-10-26_11-18-44-880.png"
+    ],
+    subtext: "Personal Laptop Security, Real-Time Telemetry Defense & Grounded Local AI",
+    description: "Cross-Platform Defense for Windows 10/11 and macOS (Apple Silicon & Intel). Features 100% local privacy, strict loopback daemon, real-time WebSocket telemetry streaming, automated test suites, PE entropy analysis, SHA-256 evidence hashing, and an offline local RAG engine powered by Ollama grounded directly in live system telemetry.",
+    tech: [
+      "Node.js 20+ LTS",
+      "Express.js",
+      "Socket.IO",
+      "SQLite3 (WAL Mode)",
+      "HTML5",
+      "Vanilla CSS3",
+      "Vanilla JavaScript (ES6+)",
+      "Chromium App Mode",
+      "Web App Manifest (PWA)",
+      "Ollama",
+      "Local RAG Engine",
+      "PowerShell",
+      "macOS (lsof, ps, pfctl, spctl, csrutil, launchd)",
+      "Crypto & Buffer APIs"
+    ]
+  },
+  {
     title: "BANTAY AI",
     link: "#",
     image: "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.07 PM.png",
@@ -12,7 +42,7 @@ export const personalProjects = [
       "/asset/personalproject/bantayai/Screenshot 2026-10-10 at 1.02.53 PM.png"
     ],
     description: "Offline Local Disaster Intelligence System. An offline-first emergency intelligence platform and bilingual AI assistant designed for the Philippines during natural disasters.",
-    tech: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS", "SQLite3", "FTS5", "Leaflet.js", "Ollama", "llama3:8b", "mistral", "qwen", "PWA", "Node.js", "Three.js", "Zustand", "React Hook Form", "Zod", "Framer Motion", "Lucide React", "Konva", "React Konva", "React Three Fiber", "PostgreSQL", "WebSockets", "Claude API", "Push Notifications", "Magic Link Auth"]
+    tech: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS", "SQLite3", "FTS5", "Leaflet.js", "Ollama", "llama3:8b", "mistral", "qwen", "PWA", "Node.js", "LangChain", "RAG"]
   },
   {
     title: "OKEKARAOKE",
